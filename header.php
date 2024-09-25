@@ -54,7 +54,7 @@
      <!--Logo -->
     <a href="#" class="logo">
        <!--mini logo for sidebar mini 50x50 pixels -->
-      <span class="logo-mini"><b>Rd</b>In</span>
+      <span class="logo-mini"><b>B</b>V</span>
        <!--logo for regular state and mobile devices -->
       <span class="logo-lg"><b>Bill</b>Voice</span>
     </a>
