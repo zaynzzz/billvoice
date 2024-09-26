@@ -17,6 +17,12 @@ class invoicr extends FPDF_rotation
 	var $referenceformat = array('.',',');
 	var $margins = array('l'=>20,'t'=>20,'r'=>20);
     public $currency;  // Deklarasi properti currency
+    public $maxImageDimensions; // Declare this property
+    public $title;              // Declare this property
+    public $firstColumnWidth;    // Declare this property
+    public $discountField;       // Declare this property
+    public $columns;             // Declare this property
+    public $productsEnded;       // Declare this property
 
 	var $l;
 	var $document;
@@ -50,7 +56,8 @@ class invoicr extends FPDF_rotation
 		$this->firstColumnWidth = 70;
 		$this->currency = $currency;
 		$this->maxImageDimensions = array(230,130);
-		
+        $this->discountField = false;
+        $this->productsEnded = false;
 		$this->setLanguage($language);
 		$this->setDocumentSize($size);
 		$this->setColor("#222222");
