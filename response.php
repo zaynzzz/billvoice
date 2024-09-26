@@ -344,128 +344,90 @@ if ($action == 'create_invoice'){
 
 	// execute the query
 	if($mysqli -> multi_query($query)){
-		// If saving success
+		//if saving success
 		echo json_encode(array(
 			'status' => 'Success',
 			'message' => 'Invoice has been created successfully!'
 		));
-	
-		// Set default date timezone
+
+		//Set default date timezone
 		date_default_timezone_set(TIMEZONE);
-	
-		// Include Invoicr class
-		// include('invoice.php');
-		require_once './invoice.php';
-		// Create a new instance
-		$invoice = new invoicr("A4", "Rp", "en");
-	
-		// Set number formatting
-		$invoice->setNumberFormat('.', ',');
-	
-		// Set your logo
-		$invoice->setLogo(COMPANY_LOGO, COMPANY_LOGO_WIDTH, COMPANY_LOGO_HEIGHT);
-	
-		// Set theme color
+		//Include Invoicr class
+		include('invoice.php');
+		//Create a new instance
+		$invoice = new invoicr('P', 'mm', 'A4');
+		//Set number formatting
+		$invoice->setNumberFormat('.',',');
+		//Set your logo
+		$invoice->setLogo(COMPANY_LOGO,COMPANY_LOGO_WIDTH,COMPANY_LOGO_HEIGHT);
+		//Set theme color
 		$invoice->setColor(INVOICE_THEME);
-	
-		// Set type
+		//Set type
 		$invoice->setType($invoice_type);
-	
-		// Set reference
+		//Set reference
 		$invoice->setReference($invoice_number);
-	
-		// Set date
+		//Set date
 		$invoice->setDate($invoice_date);
-	
-		// Set due date
+		//Set due date
 		$invoice->setDue($invoice_due_date);
-	
-		// Set from
-		$invoice->setFrom(array(COMPANY_NAME, COMPANY_ADDRESS_1, COMPANY_ADDRESS_2, COMPANY_COUNTY, COMPANY_POSTCODE, COMPANY_NUMBER, COMPANY_VAT));
-	
-		// Set to
-		$invoice->setTo(array($customer_name, $customer_address_1, $customer_address_2, $customer_town, $customer_county, $customer_postcode, "Phone: " . $customer_phone));
-	
-		// Ship to
-		$invoice->shipTo(array($customer_name_ship, $customer_address_1_ship, $customer_address_2_ship, $customer_town_ship, $customer_county_ship, $customer_postcode_ship, ''));
-	
-		// Add items (check if invoice products are set)
-		if(isset($_POST['invoice_product']) && is_array($_POST['invoice_product'])) {
-			foreach($_POST['invoice_product'] as $key => $value) {
-				$item_product = $value;
-				$item_qty = $_POST['invoice_product_qty'][$key] ?? 0; // Default to 0 if not set
-				$item_price = $_POST['invoice_product_price'][$key] ?? 0;
-				$item_discount = $_POST['invoice_product_discount'][$key] ?? 0;
-				$item_subtotal = $_POST['invoice_product_sub'][$key] ?? 0;
-	
-				// Default VAT calculation
-				$item_vat = 0;
-				if(defined('ENABLE_VAT') && ENABLE_VAT == true) {
-					$item_vat = (VAT_RATE / 100) * $item_subtotal;
-				}
-	
-				$invoice->addItem($item_product, '', $item_qty, $item_vat, $item_price, $item_discount, $item_subtotal);
-			}
+		//Set from
+		$invoice->setFrom(array(COMPANY_NAME,COMPANY_ADDRESS_1,COMPANY_ADDRESS_2,COMPANY_COUNTY,COMPANY_POSTCODE,COMPANY_NUMBER,COMPANY_VAT));
+		//Set to
+		$invoice->setTo(array($customer_name,$customer_address_1,$customer_address_2,$customer_town,$customer_county,$customer_postcode,"Phone: ".$customer_phone));
+		//Ship to
+		$invoice->shipTo(array($customer_name_ship,$customer_address_1_ship,$customer_address_2_ship,$customer_town_ship,$customer_county_ship,$customer_postcode_ship,''));
+		//Add items
+		// invoice product items
+		foreach($_POST['invoice_product'] as $key => $value) {
+		    $item_product = $value;
+		    // $item_description = $_POST['invoice_product_desc'][$key];
+		    $item_qty = $_POST['invoice_product_qty'][$key];
+		    $item_price = $_POST['invoice_product_price'][$key];
+		    $item_discount = $_POST['invoice_product_discount'][$key];
+		    $item_subtotal = $_POST['invoice_product_sub'][$key];
+
+		   	if(ENABLE_VAT == true) {
+		   		$item_vat = (VAT_RATE / 100) * $item_subtotal;
+		   	}
+
+		    $invoice->addItem($item_product,'',$item_qty,$item_vat,$item_price,$item_discount,$item_subtotal);
 		}
-	
-		// Add totals
-		if(isset($invoice_subtotal)) {
-			$invoice->addTotal("Total", $invoice_subtotal);
-		}
-	
+		//Add totals
+		$invoice->addTotal("Total",$invoice_subtotal);
 		if(!empty($invoice_discount)) {
-			$invoice->addTotal("Discount", $invoice_discount);
+			$invoice->addTotal("Discount",$invoice_discount);
 		}
-	
 		if(!empty($invoice_shipping)) {
-			$invoice->addTotal("Delivery", $invoice_shipping);
+			$invoice->addTotal("Delivery",$invoice_shipping);
 		}
-	
-		if(defined('ENABLE_VAT') && ENABLE_VAT == true && isset($invoice_vat)) {
-			$invoice->addTotal("TAX/VAT " . VAT_RATE . "%", $invoice_vat);
+		if(ENABLE_VAT == true) {
+			$invoice->addTotal("TAX/VAT ".VAT_RATE."%",$invoice_vat);
 		}
-	
-		if(isset($invoice_total)) {
-			$invoice->addTotal("Total Due", $invoice_total, true);
-		}
-	
-		// Add Badge
-		if(isset($invoice_status)) {
-			$invoice->addBadge($invoice_status);
-		}
-	
-		// Customer notes
+		$invoice->addTotal("Total Due",$invoice_total,true);
+		//Add Badge
+		$invoice->addBadge($invoice_status);
+		// Customer notes:
 		if(!empty($invoice_notes)) {
-			$invoice->addTitle("Customer Notes");
+			$invoice->addTitle("Cusatomer Notes");
 			$invoice->addParagraph($invoice_notes);
 		}
-	
-		// Add Title
+		//Add Title
 		$invoice->addTitle("Payment information");
-	
-		// Add Paragraph
+		//Add Paragraph
 		$invoice->addParagraph(PAYMENT_DETAILS);
-	
-		// Set footer note
+		//Set footer note
 		$invoice->setFooternote(FOOTER_NOTE);
-	
-		// Render the PDF
-		$invoice_path = 'invoices/' . $invoice_number . '.pdf';
-		if (!is_dir('invoices')) {
-			mkdir('invoices', 0777, true); // Create the invoices directory if it doesn't exist
-		}
-		$invoice->render($invoice_path, 'F'); // Save the PDF file
-	
+		//Render the PDF
+		$invoice->render('invoices/'.$invoice_number.'.pdf','F');
 	} else {
-		// If unable to create invoice
+		// if unable to create invoice
 		echo json_encode(array(
 			'status' => 'Error',
 			'message' => 'There has been an error, please try again.'
-			// Uncomment for debugging:
-			// 'message' => 'There has been an error, please try again.<pre>' . $mysqli->error . '</pre><pre>' . $query . '</pre>'
+			// debug
+			//'message' => 'There has been an error, please try again.<pre>'.$mysqli->error.'</pre><pre>'.$query.'</pre>'
 		));
 	}
-	
 
 	//close database connection
 	$mysqli->close();
@@ -863,7 +825,7 @@ if($action == 'update_invoice') {
 		$invoice->addBadge($invoice_status);
 		// Customer notes:
 		if(!empty($invoice_notes)) {
-			$invoice->addTitle("Customer Notes");
+			$invoice->addTitle("Cusatomer Notes");
 			$invoice->addParagraph($invoice_notes);
 		}
 		//Add Title

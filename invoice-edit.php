@@ -85,7 +85,9 @@ $mysqli->close();
 			<div class="row">
 				<div class="col-xs-5">
 					<h1>
+					<span class="logos">
 						<img src="<?php echo COMPANY_LOGO ?>" class="img-responsive">
+					</span>
 					</h1>
 				</div>
 				<div class="col-xs-7 text-right">

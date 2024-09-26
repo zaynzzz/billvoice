@@ -11,6 +11,11 @@
 ini_set('error_reporting', E_ALL);
 
 // DATABASE INFORMATION
+// define('DATABASE_HOST', getenv('IP'));
+// define('DATABASE_NAME', 'u692140442_invoices');
+// define('DATABASE_USER', 'u692140442_root');
+// define('DATABASE_PASS', 'sEf[/#i/r1@');
+
 define('DATABASE_HOST', getenv('IP'));
 define('DATABASE_NAME', 'invoice');
 define('DATABASE_USER', 'root');
@@ -18,8 +23,8 @@ define('DATABASE_PASS', '');
 
 // COMPANY INFORMATION (Sesuaikan dengan informasi perusahaan di Indonesia)
 define('COMPANY_LOGO', 'images/logo.png');
-define('COMPANY_LOGO_WIDTH', '300');
-define('COMPANY_LOGO_HEIGHT', '90');
+define('COMPANY_LOGO_WIDTH', 'auto');
+define('COMPANY_LOGO_HEIGHT', '40');
 define('COMPANY_NAME','PT. Indo Tech Solutions');
 define('COMPANY_ADDRESS_1','Jl. Jendral Sudirman No. 45');
 define('COMPANY_ADDRESS_2','Jakarta Selatan');
@@ -39,8 +44,8 @@ define('EMAIL_BODY_QUOTE', 'Berikut ini adalah penawaran harga.'); // Quote emai
 define('EMAIL_BODY_RECEIPT', 'Berikut ini adalah tanda terima pembayaran.'); // Receipt email body
 
 // OTHER SETTINGS
-define('INVOICE_PREFIX', 'INDO'); // Prefix at start of invoice - leave empty '' for no prefix
-define('INVOICE_INITIAL_VALUE', '1000'); // Initial invoice order number (start of increment)
+define('INVOICE_PREFIX', 'BVIndo'); // Prefix at start of invoice - leave empty '' for no prefix
+define('INVOICE_INITIAL_VALUE', ''); // Initial invoice order number (start of increment)
 define('INVOICE_THEME', '#222222'); // Theme colour, this sets a colour theme for the PDF generated invoice
 define('TIMEZONE', 'Asia/Jakarta'); // Timezone
 define('DATE_FORMAT', 'DD/MM/YYYY'); // Format tanggal yang umum di Indonesia
@@ -49,8 +54,8 @@ define('ENABLE_VAT', true); // Aktifkan pajak PPN
 define('VAT_INCLUDED', false); // Apakah PPN termasuk dalam harga atau tidak
 define('VAT_RATE', '10'); // Persentase PPN (10% di Indonesia)
 
-define('PAYMENT_DETAILS', 'PT. Indo Tech Solutions<br>Bank BCA<br>No. Rekening: 1234567890'); // Informasi pembayaran
-define('FOOTER_NOTE', 'https://www.indotechsolutions.co.id');
+define('PAYMENT_DETAILS', 'Zairul Antasya Zein<br>Bank BCA<br>No. Rekening: 2040546807'); // Informasi pembayaran
+define('FOOTER_NOTE', 'https://www.maqoli.com');
 
 // CONNECT TO THE DATABASE
 $mysqli = new mysqli(DATABASE_HOST, DATABASE_USER, DATABASE_PASS, DATABASE_NAME);

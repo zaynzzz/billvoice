@@ -4,7 +4,7 @@ include('header.php');
 include('functions.php');
 
 ?>
-
+ 
 		<h2>Create New Invoice</h2>
 		<hr>
 
@@ -204,7 +204,7 @@ include('functions.php');
 			<div id="invoice_totals" class="padding-right row text-right">
 				<div class="col-xs-6">
 					<div class="input-group form-group-sm textarea no-margin-bottom">
-						<textarea class-"form-control" name="invoice_notes" placeholder="Please enter any order notes here."></textarea>
+						<textarea class="form-control" name="invoice_notes" placeholder="Please enter any order notes here."></textarea>
 					</div>
 				</div>
 				<div class="col-xs-6 no-padding-right">

@@ -96,39 +96,16 @@ function getInvoices() {
 
 // Initial invoice number
 function getInvoiceId() {
+    global $mysqli; // Menggunakan variabel global
 
-	// Connect to the database
-	$mysqli = new mysqli(DATABASE_HOST, DATABASE_USER, DATABASE_PASS, DATABASE_NAME);
+    $result = $mysqli->query("SELECT MAX(id) FROM invoices");
+    $row = $result->fetch_row();
+    $id = $row[0];
 
-	// output any connection error
-	if ($mysqli->connect_error) {
-	    die('Error : ('. $mysqli->connect_errno .') '. $mysqli->connect_error);
-	}
-
-	$query = "SELECT invoice FROM invoices ORDER BY invoice DESC LIMIT 1";
-
-	if ($result = $mysqli->query($query)) {
-
-		$row_cnt = $result->num_rows;
-
-	    $row = mysqli_fetch_assoc($result);
-
-	    //var_dump($row);
-
-	    if($row_cnt == 0){
-			echo INVOICE_INITIAL_VALUE;
-		} else {
-			echo $row['invoice'] + 1; 
-		}
-
-	    // Frees the memory associated with a result
-		$result->free();
-
-		// close connection 
-		$mysqli->close();
-	}
-	
+    // Mengubah string ke integer, jika tidak ada invoice maka id menjadi 1
+    return intval($id) + 1;
 }
+
 
 // populate product dropdown for invoice creation
 function popProductsList() {

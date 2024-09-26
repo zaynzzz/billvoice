@@ -306,6 +306,24 @@ a:focus {
 .main-header .logo .logo-mini {
   display: none;
 }
+.logo-lg img {
+  width: 40px; /* Set a suitable width for the logo */
+  height: auto; /* Maintain aspect ratio */
+  margin-right: 5px; /* Space between logo and text */
+}
+.logos img {
+  max-width: 150px; /* Set a maximum width for the logo */
+  height: auto;     /* Maintain aspect ratio */
+  float: left;      /* Align the logo to the left */
+  margin-right: 15px; /* Add some space between the logo and other elements */
+}
+
+
+.user-image {
+  width: 40px; /* Set the size of the user image if applicable */
+  height: 40px; /* Ensure it is a square */
+  border-radius: 50%; /* Optional: make it circular */
+}
 .main-header .navbar-brand {
   color: #fff;
 }

@@ -52,12 +52,17 @@
   <header class="main-header">
 
      <!--Logo -->
-    <a href="#" class="logo">
-       <!--mini logo for sidebar mini 50x50 pixels -->
-      <span class="logo-mini"><b>B</b>V</span>
-       <!--logo for regular state and mobile devices -->
-      <span class="logo-lg"><b>Bill</b>Voice</span>
-    </a>
+     <a href="#" class="logo">
+    <!-- Mini logo for sidebar (50x50 pixels) -->
+    <span class="logo-mini">
+    <img src="/images/billvoice.png" class="user-image" alt="BillVoice Logo">
+    </span>
+    <!-- Logo for regular state and mobile devices -->
+    <span class="logo-lg">
+        <img src="/images/billvoice.png" class="user-image" alt="BillVoice Logo">
+        <b>Bill</b>Voice
+    </span>
+</a>
 
     <!-- Header Navbar -->
     <nav class="navbar navbar-static-top" role="navigation">
@@ -74,7 +79,7 @@
             <!-- Menu Toggle Button -->
             <a href="#" class="dropdown-toggle" data-toggle="dropdown">
               <!-- The user image in the navbar-->
-              <img src="https://pcrt.crab.org/images/default-user.png" class="user-image" alt="User Image">
+              <img src="https://icons.veryicon.com/png/o/miscellaneous/two-color-icon-library/user-286.png" class="user-image" alt="User Image">
               <!-- hidden-xs hides the username on small devices so only the image appears. -->
               <span class="hidden-xs"><?php echo $_SESSION['login_username'];?></span>
             </a>
