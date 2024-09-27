@@ -98,7 +98,7 @@ if ($action == 'email_invoice') {
     imagefilledrectangle($image, 0, 0, $width, $height, $white);
 
     // Path ke font (pastikan font ada di direktori yang benar)
-    $font = __DIR__ . '/fonts/arial.ttf';  // Pastikan Anda mengunggah font ini
+    // $font = __DIR__ . '/fonts/arial.ttf';  // Pastikan Anda mengunggah font ini
 
     // Menulis teks pada gambar
     $y = 20;  // Mulai dari posisi y=20
