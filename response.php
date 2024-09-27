@@ -28,36 +28,40 @@ if ($mysqli->connect_error) {
 
 // Check if action is 'email_invoice'
 $action = isset($_POST['action']) ? $_POST['action'] : "";
+ 
+include_once('includes/config.php');
+require_once('class.phpmailer.php');
+
+// Show PHP errors for debugging
+ini_set('display_errors', 1);
+
+// Output any connection error
+if ($mysqli->connect_error) {
+    die('Error : ('. $mysqli->connect_errno .') '. $mysqli->connect_error);
+}
+
+// Check if action is 'email_invoice'
+$action = isset($_POST['action']) ? $_POST['action'] : "";
 if ($action == 'email_invoice') {
     // Capture data from the request
     $fileId = $_POST['id'];  // Invoice ID
     $emailId = $_POST['email'];  // Recipient email address
 
-    // Use $mysqli or $conn for your MySQL connection (depending on what you are using in config.php)
-    // Example query to get invoice details
+    // Fetch invoice data from your database
     $query = "SELECT * FROM invoices WHERE invoice = '$fileId'";
-    $result = mysqli_query($mysqli, $query);  // Assuming $mysqli is your MySQLi connection variable
-    if (!$result) {
-        die('Query error: ' . mysqli_error($mysqli));
-    }
+    $result = mysqli_query($mysqli, $query);
     $invoice = mysqli_fetch_assoc($result);
 
-    // Query to get customer details
+    // Fetch customer details
     $query_customer = "SELECT * FROM customers WHERE invoice = '$fileId'";
     $result_customer = mysqli_query($mysqli, $query_customer);
-    if (!$result_customer) {
-        die('Query error: ' . mysqli_error($mysqli));
-    }
     $customer = mysqli_fetch_assoc($result_customer);
 
-    // Query to get invoice items
+    // Fetch invoice items
     $query_items = "SELECT * FROM invoice_items WHERE invoice = '$fileId'";
     $result_items = mysqli_query($mysqli, $query_items);
-    if (!$result_items) {
-        die('Query error: ' . mysqli_error($mysqli));
-    }
 
-    // Create the email body (HTML format)
+    // Create the email body in HTML format
     $email_body_html = "<h1>Invoice #" . $fileId . "</h1>";
     $email_body_html .= "<p><strong>Name:</strong> " . $customer['name'] . "<br>";
     $email_body_html .= "<strong>Email:</strong> " . $customer['email'] . "<br>";
@@ -66,10 +70,10 @@ if ($action == 'email_invoice') {
     $email_body_html .= "<h2>Invoice Details</h2>";
     $email_body_html .= "<p><strong>Date:</strong> " . $invoice['invoice_date'] . "<br>";
     $email_body_html .= "<strong>Due Date:</strong> " . $invoice['invoice_due_date'] . "<br>";
-    $email_body_html .= "<strong>Subtotal:</strong> " . number_format($invoice['subtotal'], 2) . "<br>";
-    $email_body_html .= "<strong>Shipping:</strong> " . number_format($invoice['shipping'], 2) . "<br>";
-    $email_body_html .= "<strong>Discount:</strong> " . number_format($invoice['discount'], 2) . "<br>";
-    $email_body_html .= "<strong>Total:</strong> " . number_format(($invoice['subtotal'] + $invoice['shipping'] - $invoice['discount']), 2) . "</p>";
+    $email_body_html .= "<strong>Subtotal:</strong> Rp." . number_format($invoice['subtotal'], 2) . "<br>";
+    $email_body_html .= "<strong>Shipping:</strong> Rp." . number_format($invoice['shipping'], 2) . "<br>";
+    $email_body_html .= "<strong>Discount:</strong> Rp." . number_format($invoice['discount'], 2) . "<br>";
+    $email_body_html .= "<strong>Total:</strong> Rp." . number_format(($invoice['subtotal'] + $invoice['shipping'] - $invoice['discount']), 2) . "</p>";
 
     $email_body_html .= "<h3>Items:</h3>";
     $email_body_html .= "<table border='1' cellpadding='5' cellspacing='0'>";
@@ -79,9 +83,9 @@ if ($action == 'email_invoice') {
     while ($item = mysqli_fetch_assoc($result_items)) {
         $email_body_html .= "<tr>";
         $email_body_html .= "<td>" . $item['product'] . "</td>";
-        $email_body_html .= "<td>" . number_format($item['price'], 2) . "</td>";
+        $email_body_html .= "<td>Rp." . number_format($item['price'], 2) . "</td>";
         $email_body_html .= "<td>" . $item['qty'] . "</td>";
-        $email_body_html .= "<td>" . number_format($item['subtotal'], 2) . "</td>";
+        $email_body_html .= "<td>Rp." . number_format($item['subtotal'], 2) . "</td>";
         $email_body_html .= "</tr>";
     }
     $email_body_html .= "</tbody></table>";
@@ -94,22 +98,22 @@ if ($action == 'email_invoice') {
     $email_body_plain .= "Invoice Details\n";
     $email_body_plain .= "Date: " . $invoice['invoice_date'] . "\n";
     $email_body_plain .= "Due Date: " . $invoice['invoice_due_date'] . "\n";
-    $email_body_plain .= "Subtotal: " . number_format($invoice['subtotal'], 2) . "\n";
-    $email_body_plain .= "Shipping: " . number_format($invoice['shipping'], 2) . "\n";
-    $email_body_plain .= "Discount: " . number_format($invoice['discount'], 2) . "\n";
-    $email_body_plain .= "Total: " . number_format(($invoice['subtotal'] + $invoice['shipping'] - $invoice['discount']), 2) . "\n\n";
+    $email_body_plain .= "Subtotal: Rp." . number_format($invoice['subtotal'], 2) . "\n";
+    $email_body_plain .= "Shipping: Rp." . number_format($invoice['shipping'], 2) . "\n";
+    $email_body_plain .= "Discount: Rp." . number_format($invoice['discount'], 2) . "\n";
+    $email_body_plain .= "Total: Rp." . number_format(($invoice['subtotal'] + $invoice['shipping'] - $invoice['discount']), 2) . "\n\n";
 
     $email_body_plain .= "Items:\n";
-    mysqli_data_seek($result_items, 0); // reset pointer for while loop again
+    mysqli_data_seek($result_items, 0); // Reset pointer for another loop
     while ($item = mysqli_fetch_assoc($result_items)) {
-        $email_body_plain .= $item['product'] . " - " . number_format($item['price'], 2) . " x " . $item['qty'] . " = " . number_format($item['subtotal'], 2) . "\n";
+        $email_body_plain .= $item['product'] . " - Rp." . number_format($item['price'], 2) . " x " . $item['qty'] . " = Rp." . number_format($item['subtotal'], 2) . "\n";
     }
 
     // Create a new PHPMailer instance
     $mail = new PHPMailer();
 
     // Setup sender and recipient
-    $mail->SetFrom('antzyn@datass.uno', 'Antzyn');  // Replace with your sender details
+    $mail->SetFrom('antzyn@datass.uno', 'Antzyn');
     $mail->AddAddress($emailId);  // Recipient email
 
     // Set email subject
