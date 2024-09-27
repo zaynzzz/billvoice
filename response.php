@@ -55,7 +55,7 @@ if ($action == 'email_invoice') {
     $mail->isHTML(true); // Ensure email is sent as HTML
 
     // Define the file path for the PDF based on the server's document root
-    $pdfPath = "/home/u692140442/domains/billvoice.maqoli.com/public_html/invoices/" . $fileId . ".pdf";
+    $pdfPath = "https://billvoice.maqoli.com/invoices/" . $fileId . ".pdf";
 
     // Check if the PDF file exists before attaching
     if (file_exists($pdfPath)) {
