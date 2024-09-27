@@ -48,7 +48,7 @@ if ($action == 'email_invoice') {
     }
 
     // Set plain text fallback to empty, since we want only HTML
-    $mail->AltBody = ''; // Kosongkan AltBody
+    $mail->AltBody = 'ini file idnya '.$fileId; // Kosongkan AltBody
 
     // Nonaktifkan multi-part MIME dan kirim sebagai HTML saja
     $mail->isHTML(true);
