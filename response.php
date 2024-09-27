@@ -53,26 +53,30 @@ if ($action == 'email_invoice') {
     $mail->isHTML(true);
 
     // URL dari file PDF yang dihosting
-    $pdfUrl = "https://srv1416-files.hstgr.io/4605f2c247f35255/files/public_html/invoices/" . $fileId . ".pdf";
-    
-    // Path untuk menyimpan sementara file di server
-    $tempFilePath = "./temp_invoice_" . $fileId . ".pdf";
+	$pdfUrl = "https://srv1416-files.hstgr.io/4605f2c247f35255/files/public_html/invoices/" . $fileId . ".pdf";
 
-    // Unduh file dari URL
-    $pdfContent = file_get_contents($pdfUrl);
-    if ($pdfContent !== false) {
-        // Simpan file PDF secara lokal
-        file_put_contents($tempFilePath, $pdfContent);
-        
-        // Lampirkan file PDF ke email
-        $mail->AddAttachment($tempFilePath);
-    } else {
-        echo json_encode(array(
-            'status' => 'Error',
-            'message' => 'Failed to download invoice file.'
-        ));
-        exit; // Stop further processing if the file couldn't be downloaded
-    }
+	// Path untuk menyimpan sementara file di server
+	$tempFilePath = "./temp_invoice_" . $fileId . ".pdf";
+
+	// Unduh file dari URL menggunakan curl
+	$ch = curl_init($pdfUrl);
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+	$pdfContent = curl_exec($ch);
+	curl_close($ch);
+
+	if ($pdfContent !== false) {
+		// Simpan file PDF secara lokal
+		file_put_contents($tempFilePath, $pdfContent);
+		
+		// Lampirkan file PDF ke email
+		$mail->AddAttachment($tempFilePath);
+	} else {
+		echo json_encode(array(
+			'status' => 'Error',
+			'message' => 'Failed to download invoice file.'
+		));
+		exit; // Stop further processing if the file couldn't be downloaded
+	}
 
     // Send the email
     if (!$mail->Send()) {
