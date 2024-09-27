@@ -53,7 +53,7 @@ if ($action == 'email_invoice') {
     $mail->isHTML(true);
 
     // URL dari file PDF yang dihosting
-    $pdfUrl = "https://srv1416-files.hstgr.io/4605f2c247f35255/files/public_html/invoices/" . $fileId . ".pdf";
+    $pdfUrl = "/public_html/invoices/" . $fileId . ".pdf";
     
     // Path untuk menyimpan sementara file di server
     $tempFilePath = "./temp_invoice_" . $fileId . ".pdf";
