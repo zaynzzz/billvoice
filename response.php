@@ -35,7 +35,7 @@ if ($action == 'email_invoice') {
 
     // Tentukan isi email berdasarkan tipe invoice
     if ($invoice_type == 'invoice') {
-        $mail->Body = 'Berikut adalah invoice Anda.';
+        $mail->Body = 'Berikut adalah invoice Andas.';
     } elseif ($invoice_type == 'quote') {
         $mail->Body = 'Berikut adalah penawaran Anda.';
     } elseif ($invoice_type == 'receipt') {
