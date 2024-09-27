@@ -13,52 +13,70 @@ if ($mysqli->connect_error) {
 
 $action = isset($_POST['action']) ? $_POST['action'] : "";
 
-if ($action == 'email_invoice'){
+if ($action == 'email_invoice') {
 
-	$fileId = $_POST['id'];
-	$emailId = $_POST['email'];
-	$invoice_type = $_POST['invoice_type'];
-	$custom_email = $_POST['custom_email'];
+    $fileId = $_POST['id'];
+    $emailId = $_POST['email'];
+    $invoice_type = $_POST['invoice_type'];
+    $custom_email = $_POST['custom_email'];
 
-	require_once('class.phpmailer.php');
+    require_once('class.phpmailer.php');
 
-	$mail = new PHPMailer(); // defaults to using php "mail()"
+    $mail = new PHPMailer(); // defaults to using php "mail()"
 
-	$mail->AddReplyTo(EMAIL_FROM, EMAIL_NAME);
-	$mail->SetFrom(EMAIL_FROM, EMAIL_NAME);
-	$mail->AddAddress($emailId, "");
+    // Set sender and recipient info
+    $mail->AddReplyTo(EMAIL_FROM, EMAIL_NAME);
+    $mail->SetFrom(EMAIL_FROM, EMAIL_NAME);
+    $mail->AddAddress($emailId, "");
 
-	$mail->Subject = EMAIL_SUBJECT;
-	//$mail->AltBody = EMAIL_BODY; // optional, comment out and test
-	if (empty($custom_email)){
-		if($invoice_type == 'invoice'){
-			$mail->MsgHTML(EMAIL_BODY_INVOICE);
-		} else if($invoice_type == 'quote'){
-			$mail->MsgHTML(EMAIL_BODY_QUOTE);
-		} else if($invoice_type == 'receipt'){
-			$mail->MsgHTML(EMAIL_BODY_RECEIPT);
-		}
-	} else {
-		$mail->MsgHTML($custom_email);
-	}
+    // Set email subject
+    $mail->Subject = EMAIL_SUBJECT;
 
-	$mail->AddAttachment("./invoices/".$fileId.".pdf"); // attachment
+    // Set the HTML email body based on invoice type or custom email
+    if (empty($custom_email)) {
+        if ($invoice_type == 'invoice') {
+            $mail->MsgHTML(EMAIL_BODY_INVOICE);
+        } elseif ($invoice_type == 'quote') {
+            $mail->MsgHTML(EMAIL_BODY_QUOTE);
+        } elseif ($invoice_type == 'receipt') {
+            $mail->MsgHTML(EMAIL_BODY_RECEIPT);
+        }
+    } else {
+        // Sanitize custom email content
+        $custom_email = htmlspecialchars($custom_email, ENT_QUOTES, 'UTF-8');
+        $mail->MsgHTML($custom_email);
+    }
 
-	if(!$mail->Send()) {
-		 //if unable to create new record
-	    echo json_encode(array(
-	    	'status' => 'Error',
-	    	//'message'=> 'There has been an error, please try again.'
-	    	'message' => 'There has been an error, please try again.<pre>'.$mail->ErrorInfo.'</pre>'
-	    ));
-	} else {
-	   echo json_encode(array(
-			'status' => 'Success',
-			'message'=> 'Invoice has been successfully send to the customer'
-		));
-	}
+    // Set plain text fallback for email clients that don't support HTML
+    $mail->AltBody = "Here is your invoice as a PDF attachment.";
+
+    // Add invoice PDF as an attachment
+    $pdfPath = "./invoices/" . $fileId . ".pdf";
+    if (file_exists($pdfPath)) {
+        $mail->AddAttachment($pdfPath); // Add attachment
+    } else {
+        echo json_encode(array(
+            'status' => 'Error',
+            'message' => 'Invoice file not found.'
+        ));
+        exit; // Stop further processing if the file doesn't exist
+    }
+
+    // Send the email
+    if (!$mail->Send()) {
+        echo json_encode(array(
+            'status' => 'Error',
+            'message' => 'There has been an error, please try again.<pre>' . $mail->ErrorInfo . '</pre>'
+        ));
+    } else {
+        echo json_encode(array(
+            'status' => 'Success',
+            'message' => 'Invoice has been successfully sent to the customer'
+        ));
+    }
 
 }
+
 // download invoice csv sheet
 if ($action == 'download_csv'){
 
