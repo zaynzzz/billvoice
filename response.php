@@ -13,7 +13,7 @@ if ($mysqli->connect_error) {
 }
 
 $action = isset($_POST['action']) ? $_POST['action'] : "";
-<?php
+ 
 
 include_once('includes/config.php');  // Ensure this file contains your database connection details
 require_once('class.phpmailer.php');
