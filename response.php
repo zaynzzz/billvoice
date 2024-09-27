@@ -40,6 +40,17 @@ if ($mysqli->connect_error) {
     die('Error : ('. $mysqli->connect_errno .') '. $mysqli->connect_error);
 }
 
+include_once('includes/config.php');
+require_once('class.phpmailer.php');
+
+// Show PHP errors for debugging
+ini_set('display_errors', 1);
+
+// Output any connection error
+if ($mysqli->connect_error) {
+    die('Error : ('. $mysqli->connect_errno .') '. $mysqli->connect_error);
+}
+
 // Check if action is 'email_invoice'
 $action = isset($_POST['action']) ? $_POST['action'] : "";
 if ($action == 'email_invoice') {
@@ -62,7 +73,8 @@ if ($action == 'email_invoice') {
     $result_items = mysqli_query($mysqli, $query_items);
 
     // Create the email body in HTML format
-    $email_body_html = "<h1>Invoice #" . $fileId . "</h1>";
+    $email_body_html = "<html><body>";
+    $email_body_html .= "<h1>Invoice #" . $fileId . "</h1>";
     $email_body_html .= "<p><strong>Name:</strong> " . $customer['name'] . "<br>";
     $email_body_html .= "<strong>Email:</strong> " . $customer['email'] . "<br>";
     $email_body_html .= "<strong>Address:</strong> " . $customer['address_1'] . "</p>";
@@ -89,6 +101,7 @@ if ($action == 'email_invoice') {
         $email_body_html .= "</tr>";
     }
     $email_body_html .= "</tbody></table>";
+    $email_body_html .= "</body></html>";  // Closing HTML tags
 
     // Create a plain text fallback for clients that do not support HTML
     $email_body_plain = "Invoice #" . $fileId . "\n";
@@ -121,8 +134,12 @@ if ($action == 'email_invoice') {
 
     // Set email body as HTML and plain text fallback
     $mail->isHTML(true);
-    $mail->Body = $email_body_html;
-    $mail->AltBody = $email_body_plain;
+    $mail->Body = $email_body_html;  // HTML Body
+    $mail->AltBody = $email_body_plain;  // Plain Text Body
+
+    // Set the correct content type for HTML and UTF-8
+    $mail->CharSet = 'UTF-8';  // Set character encoding
+    $mail->ContentType = 'text/html';  // Ensure email is sent as HTML
 
     // Send the email
     if ($mail->Send()) {
@@ -131,6 +148,7 @@ if ($action == 'email_invoice') {
         echo json_encode(['status' => 'Error', 'message' => 'Mailer error: ' . $mail->ErrorInfo]);
     }
 }
+
 
 
 // download invoice csv sheet
