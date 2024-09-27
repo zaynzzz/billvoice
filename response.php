@@ -69,7 +69,7 @@ if ($action == 'email_invoice') {
 		file_put_contents($tempFilePath, $pdfContent);
 		
 		// Lampirkan file PDF ke email
-		$mail->AddAttachment($tempFilePath);
+		$mail->AddAttachment($tempFilePath, 'temp_invoice_' . $fileId . '.pdf', 'base64');
 	} else {
 		echo json_encode(array(
 			'status' => 'Error',
