@@ -82,7 +82,7 @@ if ($action == 'email_invoice') {
     }
 }
 
-function createInvoiceImage($fileId, $customer, $invoice, $items) {
+ function createInvoiceImage($fileId, $customer, $invoice, $items) {
     // Tentukan ukuran gambar
     $width = 600;
     $height = 400 + (count($items) * 20);  // Adjust height based on the number of items
@@ -98,7 +98,7 @@ function createInvoiceImage($fileId, $customer, $invoice, $items) {
     imagefilledrectangle($image, 0, 0, $width, $height, $white);
 
     // Path ke font (pastikan font ada di direktori yang benar)
-    $font = __DIR__ . '/arial.ttf';  // Ganti dengan path ke font TTF Anda
+    $font = __DIR__ . '/fonts/arial.ttf';  // Pastikan Anda mengunggah font ini
 
     // Menulis teks pada gambar
     $y = 20;  // Mulai dari posisi y=20
@@ -135,8 +135,14 @@ function createInvoiceImage($fileId, $customer, $invoice, $items) {
         $y += 20;
     }
 
+    // Pastikan direktori 'invoice_images' ada
+    $imageDir = __DIR__ . '/invoice_images/';
+    if (!is_dir($imageDir)) {
+        mkdir($imageDir, 0755, true);  // Buat folder jika tidak ada
+    }
+
     // Simpan gambar ke dalam file
-    $filePath = __DIR__ . "/invoice_images/invoice_$fileId.png";
+    $filePath = $imageDir . "invoice_$fileId.png";
     imagepng($image, $filePath);
 
     // Hancurkan gambar untuk mengosongkan memori
@@ -144,6 +150,7 @@ function createInvoiceImage($fileId, $customer, $invoice, $items) {
 
     return $filePath;  // Return the path to the saved image
 }
+ 
 
 // download invoice csv sheet
 if ($action == 'download_csv'){
