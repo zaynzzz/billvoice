@@ -2,6 +2,7 @@
 
 
 include_once('includes/config.php');
+require_once('class.phpmailer.php');
 
 // show PHP errors
 ini_set('display_errors', 1);
@@ -12,27 +13,29 @@ if ($mysqli->connect_error) {
 }
 
 $action = isset($_POST['action']) ? $_POST['action'] : "";
+// Assuming PHPMailer is already included
 
+// Check if action is 'email_invoice'
 if ($action == 'email_invoice') {
 
-    $fileId = $_POST['id'];
-    $emailId = $_POST['email'];
-    $invoice_type = $_POST['invoice_type'];
-    $custom_email = $_POST['custom_email'];
+    // Capture data from the request
+    $fileId = $_POST['id'];  // PDF file ID
+    $emailId = $_POST['email'];  // Recipient email address
+    $invoice_type = $_POST['invoice_type'];  // Invoice type (invoice, quote, receipt)
+    $custom_email = $_POST['custom_email'];  // Custom email body (optional)
 
-    require_once('class.phpmailer.php');
+    // Create a new PHPMailer instance
+    $mail = new PHPMailer(); 
 
-    $mail = new PHPMailer(); // defaults to using php "mail()"
-
-    // Set sender and recipient info
+    // Setup sender and recipient
     $mail->AddReplyTo(EMAIL_FROM, EMAIL_NAME);
     $mail->SetFrom(EMAIL_FROM, EMAIL_NAME);
-    $mail->AddAddress($emailId, "");
+    $mail->AddAddress($emailId, "");  // Recipient email
 
     // Set email subject
     $mail->Subject = EMAIL_SUBJECT;
 
-    // Set the HTML email body based on invoice type or custom email
+    // Check for custom email body, otherwise use the predefined templates
     if (empty($custom_email)) {
         if ($invoice_type == 'invoice') {
             $mail->MsgHTML(EMAIL_BODY_INVOICE);
@@ -42,39 +45,43 @@ if ($action == 'email_invoice') {
             $mail->MsgHTML(EMAIL_BODY_RECEIPT);
         }
     } else {
-        // Sanitasi custom email tanpa encoding HTML
-        $custom_email = strip_tags($custom_email, '<p><a><br><strong><em>'); // Hapus tag tidak aman
-        $mail->MsgHTML($custom_email); // Kirim email dalam format HTML
+        // Sanitizing custom email content to remove harmful HTML tags
+        $custom_email = strip_tags($custom_email, '<p><a><br><strong><em>'); 
+        $mail->MsgHTML($custom_email);  // Set the custom HTML email body
     }
 
-    // Set plain text fallback to empty, since we want only HTML
-    $mail->AltBody = 'ini file idnya '.$fileId; // Kosongkan AltBody
+    // No plain text fallback, sending as HTML only
+    $mail->AltBody = ''; 
+    $mail->isHTML(true); // Ensure email is sent as HTML
 
-    // Nonaktifkan multi-part MIME dan kirim sebagai HTML saja
-    $mail->isHTML(true);
+    // Define the file path for the PDF based on the server's document root
+    $pdfPath = "/home/u692140442/domains/billvoice.maqoli.com/public_html/invoices/" . $fileId . ".pdf";
 
-    // Add invoice PDF as an attachment
-	$pdfPath = $_SERVER['DOCUMENT_ROOT'] . "/invoices/" . $fileId . ".pdf";
+    // Check if the PDF file exists before attaching
     if (file_exists($pdfPath)) {
-		$mail->AddAttachment($pdfPath); // Tambahkan lampiran PDF
-	} else {
-		echo json_encode(array(
-			'status' => 'Error',
-			'message' => 'Invoice file not found.'
-		));
-		exit;
-	}
-
-    // Send the email
-    if (!$mail->Send()) {
+        // Attach the PDF file
+        $mail->AddAttachment($pdfPath);
+    } else {
+        // Return error if the file is not found
         echo json_encode(array(
             'status' => 'Error',
-            'message' => 'There has been an error, please try again.<pre>' . $mail->ErrorInfo . '</pre>'
+            'message' => 'Invoice file not found.'
+        ));
+        exit;  // Stop further processing if file not found
+    }
+
+    // Send the email and handle errors
+    if (!$mail->Send()) {
+        // Error sending the email
+        echo json_encode(array(
+            'status' => 'Error',
+            'message' => 'Mailer error: ' . $mail->ErrorInfo
         ));
     } else {
+        // Success message after email is sent
         echo json_encode(array(
             'status' => 'Success',
-            'message' => 'Email has been successfully sent to the customer. '.$_SERVER['DOCUMENT_ROOT']
+            'message' => 'Email has been successfully sent.'
         ));
     }
 }
