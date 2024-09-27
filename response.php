@@ -28,31 +28,8 @@ if ($mysqli->connect_error) {
 
 // Check if action is 'email_invoice'
 $action = isset($_POST['action']) ? $_POST['action'] : "";
+
  
-include_once('includes/config.php');
-require_once('class.phpmailer.php');
-
-// Show PHP errors for debugging
-ini_set('display_errors', 1);
-
-// Output any connection error
-if ($mysqli->connect_error) {
-    die('Error : ('. $mysqli->connect_errno .') '. $mysqli->connect_error);
-}
-
-include_once('includes/config.php');
-require_once('class.phpmailer.php');
-
-// Show PHP errors for debugging
-ini_set('display_errors', 1);
-
-// Output any connection error
-if ($mysqli->connect_error) {
-    die('Error : ('. $mysqli->connect_errno .') '. $mysqli->connect_error);
-}
-
-// Check if action is 'email_invoice'
-$action = isset($_POST['action']) ? $_POST['action'] : "";
 if ($action == 'email_invoice') {
     // Capture data from the request
     $fileId = $_POST['id'];  // Invoice ID
@@ -72,55 +49,14 @@ if ($action == 'email_invoice') {
     $query_items = "SELECT * FROM invoice_items WHERE invoice = '$fileId'";
     $result_items = mysqli_query($mysqli, $query_items);
 
-    // Create the email body in HTML format
-    $email_body_html = "<html><body>";
-    $email_body_html .= "<h1>Invoice #" . $fileId . "</h1>";
-    $email_body_html .= "<p><strong>Name:</strong> " . $customer['name'] . "<br>";
-    $email_body_html .= "<strong>Email:</strong> " . $customer['email'] . "<br>";
-    $email_body_html .= "<strong>Address:</strong> " . $customer['address_1'] . "</p>";
-
-    $email_body_html .= "<h2>Invoice Details</h2>";
-    $email_body_html .= "<p><strong>Date:</strong> " . $invoice['invoice_date'] . "<br>";
-    $email_body_html .= "<strong>Due Date:</strong> " . $invoice['invoice_due_date'] . "<br>";
-    $email_body_html .= "<strong>Subtotal:</strong> Rp." . number_format($invoice['subtotal'], 2) . "<br>";
-    $email_body_html .= "<strong>Shipping:</strong> Rp." . number_format($invoice['shipping'], 2) . "<br>";
-    $email_body_html .= "<strong>Discount:</strong> Rp." . number_format($invoice['discount'], 2) . "<br>";
-    $email_body_html .= "<strong>Total:</strong> Rp." . number_format(($invoice['subtotal'] + $invoice['shipping'] - $invoice['discount']), 2) . "</p>";
-
-    $email_body_html .= "<h3>Items:</h3>";
-    $email_body_html .= "<table border='1' cellpadding='5' cellspacing='0'>";
-    $email_body_html .= "<thead><tr><th>Product</th><th>Price</th><th>Qty</th><th>Subtotal</th></tr></thead><tbody>";
-
-    // Loop through items
+    // Prepare items for image
+    $items = [];
     while ($item = mysqli_fetch_assoc($result_items)) {
-        $email_body_html .= "<tr>";
-        $email_body_html .= "<td>" . $item['product'] . "</td>";
-        $email_body_html .= "<td>Rp." . number_format($item['price'], 2) . "</td>";
-        $email_body_html .= "<td>" . $item['qty'] . "</td>";
-        $email_body_html .= "<td>Rp." . number_format($item['subtotal'], 2) . "</td>";
-        $email_body_html .= "</tr>";
+        $items[] = $item;
     }
-    $email_body_html .= "</tbody></table>";
-    $email_body_html .= "</body></html>";  // Closing HTML tags
 
-    // Create a plain text fallback for clients that do not support HTML
-    $email_body_plain = "Invoice #" . $fileId . "\n";
-    $email_body_plain .= "Name: " . $customer['name'] . "\n";
-    $email_body_plain .= "Email: " . $customer['email'] . "\n";
-    $email_body_plain .= "Address: " . $customer['address_1'] . "\n\n";
-    $email_body_plain .= "Invoice Details\n";
-    $email_body_plain .= "Date: " . $invoice['invoice_date'] . "\n";
-    $email_body_plain .= "Due Date: " . $invoice['invoice_due_date'] . "\n";
-    $email_body_plain .= "Subtotal: Rp." . number_format($invoice['subtotal'], 2) . "\n";
-    $email_body_plain .= "Shipping: Rp." . number_format($invoice['shipping'], 2) . "\n";
-    $email_body_plain .= "Discount: Rp." . number_format($invoice['discount'], 2) . "\n";
-    $email_body_plain .= "Total: Rp." . number_format(($invoice['subtotal'] + $invoice['shipping'] - $invoice['discount']), 2) . "\n\n";
-
-    $email_body_plain .= "Items:\n";
-    mysqli_data_seek($result_items, 0); // Reset pointer for another loop
-    while ($item = mysqli_fetch_assoc($result_items)) {
-        $email_body_plain .= $item['product'] . " - Rp." . number_format($item['price'], 2) . " x " . $item['qty'] . " = Rp." . number_format($item['subtotal'], 2) . "\n";
-    }
+    // Create invoice image
+    $imagePath = createInvoiceImage($fileId, $customer, $invoice, $items);
 
     // Create a new PHPMailer instance
     $mail = new PHPMailer();
@@ -132,14 +68,11 @@ if ($action == 'email_invoice') {
     // Set email subject
     $mail->Subject = 'Your Invoice #' . $fileId;
 
-    // Set email body as HTML and plain text fallback
-    $mail->isHTML(true);
-    $mail->Body = $email_body_html;  // HTML Body
-    $mail->AltBody = $email_body_plain;  // Plain Text Body
+    // Body of the email
+    $mail->Body = "Please find attached the image of your invoice.";
 
-    // Set the correct content type for HTML and UTF-8
-    $mail->CharSet = 'UTF-8';  // Set character encoding
-    $mail->ContentType = 'text/html';  // Ensure email is sent as HTML
+    // Attach the invoice image
+    $mail->AddAttachment($imagePath);
 
     // Send the email
     if ($mail->Send()) {
@@ -149,7 +82,68 @@ if ($action == 'email_invoice') {
     }
 }
 
+function createInvoiceImage($fileId, $customer, $invoice, $items) {
+    // Tentukan ukuran gambar
+    $width = 600;
+    $height = 400 + (count($items) * 20);  // Adjust height based on the number of items
+    
+    // Membuat gambar kosong
+    $image = imagecreatetruecolor($width, $height);
 
+    // Warna
+    $white = imagecolorallocate($image, 255, 255, 255);
+    $black = imagecolorallocate($image, 0, 0, 0);
+
+    // Background putih
+    imagefilledrectangle($image, 0, 0, $width, $height, $white);
+
+    // Path ke font (pastikan font ada di direktori yang benar)
+    $font = __DIR__ . '/arial.ttf';  // Ganti dengan path ke font TTF Anda
+
+    // Menulis teks pada gambar
+    $y = 20;  // Mulai dari posisi y=20
+
+    imagettftext($image, 14, 0, 10, $y, $black, $font, "Invoice #$fileId");
+    $y += 30;
+    imagettftext($image, 12, 0, 10, $y, $black, $font, "Name: " . $customer['name']);
+    $y += 20;
+    imagettftext($image, 12, 0, 10, $y, $black, $font, "Email: " . $customer['email']);
+    $y += 20;
+    imagettftext($image, 12, 0, 10, $y, $black, $font, "Address: " . $customer['address_1']);
+    $y += 40;
+
+    imagettftext($image, 12, 0, 10, $y, $black, $font, "Invoice Details");
+    $y += 20;
+    imagettftext($image, 12, 0, 10, $y, $black, $font, "Date: " . $invoice['invoice_date']);
+    $y += 20;
+    imagettftext($image, 12, 0, 10, $y, $black, $font, "Due Date: " . $invoice['invoice_due_date']);
+    $y += 20;
+    imagettftext($image, 12, 0, 10, $y, $black, $font, "Subtotal: Rp." . number_format($invoice['subtotal'], 2));
+    $y += 20;
+    imagettftext($image, 12, 0, 10, $y, $black, $font, "Shipping: Rp." . number_format($invoice['shipping'], 2));
+    $y += 20;
+    imagettftext($image, 12, 0, 10, $y, $black, $font, "Discount: Rp." . number_format($invoice['discount'], 2));
+    $y += 20;
+    imagettftext($image, 12, 0, 10, $y, $black, $font, "Total: Rp." . number_format(($invoice['subtotal'] + $invoice['shipping'] - $invoice['discount']), 2));
+    $y += 40;
+
+    imagettftext($image, 12, 0, 10, $y, $black, $font, "Items:");
+    $y += 20;
+
+    foreach ($items as $item) {
+        imagettftext($image, 12, 0, 10, $y, $black, $font, $item['product'] . " - Rp." . number_format($item['price'], 2) . " x " . $item['qty'] . " = Rp." . number_format($item['subtotal'], 2));
+        $y += 20;
+    }
+
+    // Simpan gambar ke dalam file
+    $filePath = __DIR__ . "/invoice_images/invoice_$fileId.png";
+    imagepng($image, $filePath);
+
+    // Hancurkan gambar untuk mengosongkan memori
+    imagedestroy($image);
+
+    return $filePath;  // Return the path to the saved image
+}
 
 // download invoice csv sheet
 if ($action == 'download_csv'){
