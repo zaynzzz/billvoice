@@ -14,7 +14,6 @@ if ($mysqli->connect_error) {
 $action = isset($_POST['action']) ? $_POST['action'] : "";
 
 if ($action == 'email_invoice') {
-
     $fileId = $_POST['id'];
     $emailId = $_POST['email'];
     $invoice_type = $_POST['invoice_type'];
@@ -48,21 +47,31 @@ if ($action == 'email_invoice') {
     }
 
     // Set plain text fallback to empty, since we want only HTML
-    $mail->AltBody = 'ini file idnya '.$fileId; // Kosongkan AltBody
+    $mail->AltBody = ''; // Kosongkan AltBody
 
     // Nonaktifkan multi-part MIME dan kirim sebagai HTML saja
     $mail->isHTML(true);
 
-    // Add invoice PDF as an attachment
-    $pdfPath = "./invoices/" . $fileId . ".pdf";
-    if (file_exists($pdfPath)) {
-        $mail->AddAttachment($pdfPath); // Tambahkan lampiran PDF
+    // URL dari file PDF yang dihosting
+    $pdfUrl = "https://srv1416-files.hstgr.io/4605f2c247f35255/files/public_html/invoices/" . $fileId . ".pdf";
+    
+    // Path untuk menyimpan sementara file di server
+    $tempFilePath = "./temp_invoice_" . $fileId . ".pdf";
+
+    // Unduh file dari URL
+    $pdfContent = file_get_contents($pdfUrl);
+    if ($pdfContent !== false) {
+        // Simpan file PDF secara lokal
+        file_put_contents($tempFilePath, $pdfContent);
+        
+        // Lampirkan file PDF ke email
+        $mail->AddAttachment($tempFilePath);
     } else {
         echo json_encode(array(
             'status' => 'Error',
-            'message' => 'Invoice file not found.'
+            'message' => 'Failed to download invoice file.'
         ));
-        exit; // Stop further processing if the file doesn't exist
+        exit; // Stop further processing if the file couldn't be downloaded
     }
 
     // Send the email
@@ -77,7 +86,11 @@ if ($action == 'email_invoice') {
             'message' => 'Email has been successfully sent to the customer.'
         ));
     }
+
+    // Hapus file sementara setelah dikirim
+    unlink($tempFilePath);
 }
+
 
 
 
