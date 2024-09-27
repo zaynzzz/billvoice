@@ -15,49 +15,80 @@ if ($mysqli->connect_error) {
 $action = isset($_POST['action']) ? $_POST['action'] : "";
 // Assuming PHPMailer is already included
 
-// Check if action is 'email_invoice'
+ // Check if action is 'email_invoice'
 if ($action == 'email_invoice') {
-    // Capture data from the request
-    $fileId = $_POST['id'];  
-    $emailId = $_POST['email'];  
 
-    // Create a new PHPMailer instance
-    $mail = new PHPMailer();
+    // Ambil data dari request
+    $fileId = $_POST['id'];  // ID file PDF
+    $emailId = $_POST['email'];  // Alamat email penerima
+    $invoice_type = $_POST['invoice_type'];  // Tipe invoice (invoice, quote, receipt)
 
-    // Setup sender and recipient
-    $mail->SetFrom(EMAIL_FROM, EMAIL_NAME);
-    $mail->AddAddress($emailId, "");
+    // Inisialisasi PHPMailer
+    $mail = new PHPMailer(); 
 
-    // Set email subject
-    $mail->Subject = "Your Invoice";
+    // Setup pengirim dan penerima
+    $mail->SetFrom('antzyn@datass.uno', 'Antzyn');  // Ubah dengan detail pengirim
+    $mail->AddAddress($emailId);  // Alamat email penerima
 
-    // Generate the PDF
-    require('fpdf.php');
-    $pdf = new FPDF();
-    $pdf->AddPage();
-    $pdf->SetFont('Arial', 'B', 16);
-    $pdf->Cell(40, 10, 'Hello World!');
-    
-    // Save the PDF to a temporary file
-    $tmpPdfPath = __DIR__ . '/invoices/invoice_' . $fileId . '.pdf';
-    $pdf->Output('F', $tmpPdfPath);  // Save PDF
+    // Tentukan subject email
+    $mail->Subject = 'Invoice Anda';
 
-    // Attach the PDF file to the email
-    $mail->AddAttachment($tmpPdfPath);
-
-    // Send the email
-    if ($mail->Send()) {
-        echo json_encode(['status' => 'Success', 'message' => 'Email sent successfully!']);
-    } else {
-        echo json_encode(['status' => 'Error', 'message' => 'Mailer error: ' . $mail->ErrorInfo]);
+    // Tentukan isi email berdasarkan tipe invoice
+    if ($invoice_type == 'invoice') {
+        $mail->Body = 'Berikut adalah invoice Anda.';
+    } elseif ($invoice_type == 'quote') {
+        $mail->Body = 'Berikut adalah penawaran Anda.';
+    } elseif ($invoice_type == 'receipt') {
+        $mail->Body = 'Berikut adalah bukti pembayaran Anda.';
     }
 
-    // Optionally delete the temporary file
-    unlink($tmpPdfPath);
+    // Kirim sebagai email HTML
+    $mail->isHTML(true);
+
+    // Path ke file base64 yang berisi PDF
+    $pdfBase64File = __DIR__ . "/invoices/" . $fileId . ".txt";  // File yang berisi base64 PDF
+
+    // Cek apakah file base64 ada, lalu decode dan lampirkan sebagai PDF
+    if (file_exists($pdfBase64File)) {
+        // Baca konten file base64
+        $base64Content = file_get_contents($pdfBase64File);
+
+        // Decode base64 ke bentuk binary PDF
+        $pdfDecoded = base64_decode($base64Content);
+
+        // Simpan PDF hasil decoding sementara
+        $tmpPdfPath = __DIR__ . '/invoices/decoded_' . $fileId . '.pdf';
+
+        // Tulis konten PDF hasil decoding ke file sementara
+        file_put_contents($tmpPdfPath, $pdfDecoded);
+
+        // Lampirkan file PDF
+        $mail->addAttachment($tmpPdfPath);
+
+        // Optionally, you can delete the temporary file after sending the email
+        // unlink($tmpPdfPath);
+    } else {
+        echo json_encode(array(
+            'status' => 'Error',
+            'message' => 'File Base64 tidak ditemukan.'
+        ));
+        exit;
+    }
+
+    // Kirim email dan cek apakah berhasil
+    if (!$mail->send()) {
+        echo json_encode(array(
+            'status' => 'Error',
+            'message' => 'Error: ' . $mail->ErrorInfo
+        ));
+    } else {
+        echo json_encode(array(
+            'status' => 'Success',
+            'message' => 'Email berhasil dikirim.'
+        ));
+    }
 }
-
-
-
+ 
 
 
 
