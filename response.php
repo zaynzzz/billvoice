@@ -54,20 +54,37 @@ if ($action == 'email_invoice') {
     $mail->AltBody = ''; 
     $mail->isHTML(true); // Ensure email is sent as HTML
 
-    // Define the file path for the PDF based on the server's document root
-    $pdfPath = "https://billvoice.maqoli.com/invoices/" . $fileId . ".pdf";
+    // Define the file URL for the PDF
+    $pdfUrl = "https://billvoice.maqoli.com/invoices/900.pdf";
 
-    // Check if the PDF file exists before attaching
-    if (file_exists($pdfPath)) {
-        // Attach the PDF file
-        $mail->AddAttachment($pdfPath);
+    // Get the content of the PDF from the URL
+    $pdfContent = @file_get_contents($pdfUrl);
+
+    // Check if PDF content was successfully retrieved
+    if ($pdfContent !== false) {
+        // Ubah jalur untuk menyimpan file sementara di dalam direktori lokal
+        $tmpPdfPath = __DIR__ . '/invoices/temp/invoice_' . $fileId . '.pdf';  // Ganti dengan folder yang ada di proyek Anda
+
+        // Cek jika folder 'invoices/temp/' ada, jika tidak, buat folder tersebut
+        if (!is_dir(__DIR__ . '/invoices/temp/')) {
+            mkdir(__DIR__ . '/invoices/temp/', 0755, true);  // Buat folder dengan permission yang sesuai
+        }
+
+        // Simpan file PDF ke direktori sementara
+        file_put_contents($tmpPdfPath, $pdfContent);
+
+        // Attach the PDF file from the temporary location
+        $mail->AddAttachment($tmpPdfPath);
+
+        // Optionally, you can delete the file after sending the email
+        // unlink($tmpPdfPath);
     } else {
-        // Return error if the file is not found
+        // Return error if the file content cannot be retrieved
         echo json_encode(array(
             'status' => 'Error',
-            'message' => 'Invoice file not found.'
+            'message' => 'Failed to download invoice file.'.$fileId
         ));
-        exit;  // Stop further processing if file not found
+        exit;  // Stop further processing if file cannot be downloaded
     }
 
     // Send the email and handle errors
@@ -81,7 +98,7 @@ if ($action == 'email_invoice') {
         // Success message after email is sent
         echo json_encode(array(
             'status' => 'Success',
-            'message' => 'Email has been successfully sent.'
+            'message' => 'Email has been successfully sent.'.$fileId
         ));
     }
 }
