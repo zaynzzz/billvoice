@@ -15,80 +15,152 @@ if ($mysqli->connect_error) {
 $action = isset($_POST['action']) ? $_POST['action'] : "";
 // Assuming PHPMailer is already included
 
- // Check if action is 'email_invoice'
+//  // Check if action is 'email_invoice'
+// if ($action == 'email_invoice') {
+
+//     // Ambil data dari request
+//     $fileId = $_POST['id'];  // ID file PDF
+//     $emailId = $_POST['email'];  // Alamat email penerima
+//     $invoice_type = $_POST['invoice_type'];  // Tipe invoice (invoice, quote, receipt)
+
+//     // Inisialisasi PHPMailer
+//     $mail = new PHPMailer(); 
+
+//     // Setup pengirim dan penerima
+//     $mail->SetFrom('antzyn@datass.uno', 'Antzyn');  // Ubah dengan detail pengirim
+//     $mail->AddAddress($emailId);  // Alamat email penerima
+
+//     // Tentukan subject email
+//     $mail->Subject = 'Invoice Anda';
+
+//     // Tentukan isi email berdasarkan tipe invoice
+//     if ($invoice_type == 'invoice') {
+//         $mail->Body = 'Berikut adalah invoice Anda.';
+//     } elseif ($invoice_type == 'quote') {
+//         $mail->Body = 'Berikut adalah penawaran Anda.';
+//     } elseif ($invoice_type == 'receipt') {
+//         $mail->Body = 'Berikut adalah bukti pembayaran Anda.';
+//     }
+
+//     // Kirim sebagai email HTML
+//     $mail->isHTML(true);
+
+//     // Path ke file base64 yang berisi PDF
+//     $pdfBase64File = __DIR__ . "/invoices/" . $fileId . ".txt";  // File yang berisi base64 PDF
+
+//     // Cek apakah file base64 ada, lalu decode dan lampirkan sebagai PDF
+//     if (file_exists($pdfBase64File)) {
+//         // Baca konten file base64
+//         $base64Content = file_get_contents($pdfBase64File);
+
+//         // Decode base64 ke bentuk binary PDF
+//         $pdfDecoded = base64_decode($base64Content);
+
+//         // Simpan PDF hasil decoding sementara
+//         $tmpPdfPath = __DIR__ . '/invoices/decoded_' . $fileId . '.pdf';
+
+//         // Tulis konten PDF hasil decoding ke file sementara
+//         file_put_contents($tmpPdfPath, $pdfDecoded);
+
+//         // Lampirkan file PDF
+//         $mail->addAttachment($tmpPdfPath);
+
+//         // Optionally, you can delete the temporary file after sending the email
+//         // unlink($tmpPdfPath);
+//     } else {
+//         echo json_encode(array(
+//             'status' => 'Error',
+//             'message' => 'File Base64 tidak ditemukan.'
+//         ));
+//         exit;
+//     }
+
+//     // Kirim email dan cek apakah berhasil
+//     if (!$mail->send()) {
+//         echo json_encode(array(
+//             'status' => 'Error',
+//             'message' => 'Error: ' . $mail->ErrorInfo
+//         ));
+//     } else {
+//         echo json_encode(array(
+//             'status' => 'Success',
+//             'message' => 'Email berhasil dikirim.'
+//         ));
+//     }
+// }
 if ($action == 'email_invoice') {
+    // Capture data from the request
+    $fileId = $_POST['id'];  // Invoice ID
+    $emailId = $_POST['email'];  // Recipient email address
 
-    // Ambil data dari request
-    $fileId = $_POST['id'];  // ID file PDF
-    $emailId = $_POST['email'];  // Alamat email penerima
-    $invoice_type = $_POST['invoice_type'];  // Tipe invoice (invoice, quote, receipt)
+    // Fetch invoice data from your database
+    // Assuming you have already connected to your database
 
-    // Inisialisasi PHPMailer
-    $mail = new PHPMailer(); 
+    // Example query to get invoice details
+    $query = "SELECT * FROM invoices WHERE invoice = '$fileId'";
+    $result = mysqli_query($conn, $query);
+    $invoice = mysqli_fetch_assoc($result);
 
-    // Setup pengirim dan penerima
-    $mail->SetFrom('antzyn@datass.uno', 'Antzyn');  // Ubah dengan detail pengirim
-    $mail->AddAddress($emailId);  // Alamat email penerima
+    // Query to get customer details
+    $query_customer = "SELECT * FROM customers WHERE invoice = '$fileId'";
+    $result_customer = mysqli_query($conn, $query_customer);
+    $customer = mysqli_fetch_assoc($result_customer);
 
-    // Tentukan subject email
-    $mail->Subject = 'Invoice Anda';
+    // Query to get invoice items
+    $query_items = "SELECT * FROM invoice_items WHERE invoice = '$fileId'";
+    $result_items = mysqli_query($conn, $query_items);
 
-    // Tentukan isi email berdasarkan tipe invoice
-    if ($invoice_type == 'invoice') {
-        $mail->Body = 'Berikut adalah invoice Anda.';
-    } elseif ($invoice_type == 'quote') {
-        $mail->Body = 'Berikut adalah penawaran Anda.';
-    } elseif ($invoice_type == 'receipt') {
-        $mail->Body = 'Berikut adalah bukti pembayaran Anda.';
+    // Create the email body (HTML format)
+    $email_body = "<h1>Invoice #" . $fileId . "</h1>";
+    $email_body .= "<p><strong>Name:</strong> " . $customer['name'] . "<br>";
+    $email_body .= "<strong>Email:</strong> " . $customer['email'] . "<br>";
+    $email_body .= "<strong>Address:</strong> " . $customer['address_1'] . "</p>";
+
+    $email_body .= "<h2>Invoice Details</h2>";
+    $email_body .= "<p><strong>Date:</strong> " . $invoice['invoice_date'] . "<br>";
+    $email_body .= "<strong>Due Date:</strong> " . $invoice['invoice_due_date'] . "<br>";
+    $email_body .= "<strong>Subtotal:</strong> " . number_format($invoice['subtotal'], 2) . "<br>";
+    $email_body .= "<strong>Shipping:</strong> " . number_format($invoice['shipping'], 2) . "<br>";
+    $email_body .= "<strong>Discount:</strong> " . number_format($invoice['discount'], 2) . "<br>";
+    $email_body .= "<strong>Total:</strong> " . number_format(($invoice['subtotal'] + $invoice['shipping'] - $invoice['discount']), 2) . "</p>";
+
+    $email_body .= "<h3>Items:</h3>";
+    $email_body .= "<table border='1' cellpadding='5' cellspacing='0'>";
+    $email_body .= "<thead><tr><th>Product</th><th>Price</th><th>Qty</th><th>Subtotal</th></tr></thead><tbody>";
+
+    // Loop through items
+    while ($item = mysqli_fetch_assoc($result_items)) {
+        $email_body .= "<tr>";
+        $email_body .= "<td>" . $item['product'] . "</td>";
+        $email_body .= "<td>" . number_format($item['price'], 2) . "</td>";
+        $email_body .= "<td>" . $item['qty'] . "</td>";
+        $email_body .= "<td>" . number_format($item['subtotal'], 2) . "</td>";
+        $email_body .= "</tr>";
     }
+    $email_body .= "</tbody></table>";
 
-    // Kirim sebagai email HTML
+    // Create a new PHPMailer instance
+    $mail = new PHPMailer();
+
+    // Setup sender and recipient
+    $mail->SetFrom('antzyn@datass.uno', 'Antzyn');  // Replace with your sender details
+    $mail->AddAddress($emailId);  // Recipient email
+
+    // Set email subject
+    $mail->Subject = 'Your Invoice #' . $fileId;
+
+    // Set email body as HTML
     $mail->isHTML(true);
+    $mail->Body = $email_body;
 
-    // Path ke file base64 yang berisi PDF
-    $pdfBase64File = __DIR__ . "/invoices/" . $fileId . ".txt";  // File yang berisi base64 PDF
-
-    // Cek apakah file base64 ada, lalu decode dan lampirkan sebagai PDF
-    if (file_exists($pdfBase64File)) {
-        // Baca konten file base64
-        $base64Content = file_get_contents($pdfBase64File);
-
-        // Decode base64 ke bentuk binary PDF
-        $pdfDecoded = base64_decode($base64Content);
-
-        // Simpan PDF hasil decoding sementara
-        $tmpPdfPath = __DIR__ . '/invoices/decoded_' . $fileId . '.pdf';
-
-        // Tulis konten PDF hasil decoding ke file sementara
-        file_put_contents($tmpPdfPath, $pdfDecoded);
-
-        // Lampirkan file PDF
-        $mail->addAttachment($tmpPdfPath);
-
-        // Optionally, you can delete the temporary file after sending the email
-        // unlink($tmpPdfPath);
+    // Send the email
+    if ($mail->Send()) {
+        echo json_encode(['status' => 'Success', 'message' => 'Email sent successfully!']);
     } else {
-        echo json_encode(array(
-            'status' => 'Error',
-            'message' => 'File Base64 tidak ditemukan.'
-        ));
-        exit;
-    }
-
-    // Kirim email dan cek apakah berhasil
-    if (!$mail->send()) {
-        echo json_encode(array(
-            'status' => 'Error',
-            'message' => 'Error: ' . $mail->ErrorInfo
-        ));
-    } else {
-        echo json_encode(array(
-            'status' => 'Success',
-            'message' => 'Email berhasil dikirim.'
-        ));
+        echo json_encode(['status' => 'Error', 'message' => 'Mailer error: ' . $mail->ErrorInfo]);
     }
 }
- 
+
 
 
 
