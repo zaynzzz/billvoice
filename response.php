@@ -15,7 +15,6 @@ $action = isset($_POST['action']) ? $_POST['action'] : "";
 
 if ($action == 'email_invoice') {
 
-    $fileId = $_POST['id'];
     $emailId = $_POST['email'];
     $invoice_type = $_POST['invoice_type'];
     $custom_email = $_POST['custom_email'];
@@ -48,19 +47,7 @@ if ($action == 'email_invoice') {
     }
 
     // Set plain text fallback for email clients that don't support HTML
-    $mail->AltBody = "Here is your invoice as a PDF attachment.";
-
-    // Add invoice PDF as an attachment
-    $pdfPath = "./invoices/" . $fileId . ".pdf";
-    if (file_exists($pdfPath)) {
-        $mail->AddAttachment($pdfPath); // Add attachment
-    } else {
-        echo json_encode(array(
-            'status' => 'Error',
-            'message' => 'Invoice file not found.'
-        ));
-        exit; // Stop further processing if the file doesn't exist
-    }
+    $mail->AltBody = "This is a plain-text message body for clients that do not support HTML.";
 
     // Send the email
     if (!$mail->Send()) {
@@ -71,9 +58,10 @@ if ($action == 'email_invoice') {
     } else {
         echo json_encode(array(
             'status' => 'Success',
-            'message' => 'Invoice has been successfully sent to the customer'
+            'message' => 'Email has been successfully sent to the customer.'
         ));
     }
+
 }
 
 
