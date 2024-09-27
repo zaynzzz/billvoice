@@ -18,87 +18,57 @@ $action = isset($_POST['action']) ? $_POST['action'] : "";
 // Check if action is 'email_invoice'
 if ($action == 'email_invoice') {
 
-    // Capture data from the request
-    $fileId = $_POST['id'];  // PDF file ID
-    $emailId = $_POST['email'];  // Recipient email address
-    $invoice_type = $_POST['invoice_type'];  // Invoice type (invoice, quote, receipt)
-    $custom_email = $_POST['custom_email'];  // Custom email body (optional)
+    // Ambil data dari request
+    $fileId = $_POST['id'];  // ID file PDF
+    $emailId = $_POST['email'];  // Alamat email penerima
+    $invoice_type = $_POST['invoice_type'];  // Tipe invoice (invoice, quote, receipt)
 
-    // Create a new PHPMailer instance
+    // Inisialisasi PHPMailer
     $mail = new PHPMailer(); 
 
-    // Setup sender and recipient
-    $mail->AddReplyTo(EMAIL_FROM, EMAIL_NAME);
-    $mail->SetFrom(EMAIL_FROM, EMAIL_NAME);
-    $mail->AddAddress($emailId, "");  // Recipient email
+    // Setup pengirim dan penerima
+    $mail->SetFrom('antzyn@datass.uno', 'Antzyn');  // Ubah dengan detail pengirim
+    $mail->AddAddress($emailId);  // Alamat email penerima
 
-    // Set email subject
-    $mail->Subject = EMAIL_SUBJECT;
+    // Tentukan subject email
+    $mail->Subject = 'Invoice Anda';
 
-    // Check for custom email body, otherwise use the predefined templates
-    if (empty($custom_email)) {
-        if ($invoice_type == 'invoice') {
-            $mail->MsgHTML(EMAIL_BODY_INVOICE);
-        } elseif ($invoice_type == 'quote') {
-            $mail->MsgHTML(EMAIL_BODY_QUOTE);
-        } elseif ($invoice_type == 'receipt') {
-            $mail->MsgHTML(EMAIL_BODY_RECEIPT);
-        }
-    } else {
-        // Sanitizing custom email content to remove harmful HTML tags
-        $custom_email = strip_tags($custom_email, '<p><a><br><strong><em>'); 
-        $mail->MsgHTML($custom_email);  // Set the custom HTML email body
+    // Tentukan isi email berdasarkan tipe invoice
+    if ($invoice_type == 'invoice') {
+        $mail->Body = 'Berikut adalah invoice Anda.';
+    } elseif ($invoice_type == 'quote') {
+        $mail->Body = 'Berikut adalah penawaran Anda.';
+    } elseif ($invoice_type == 'receipt') {
+        $mail->Body = 'Berikut adalah bukti pembayaran Anda.';
     }
 
-    // No plain text fallback, sending as HTML only
-    $mail->AltBody = ''; 
-    $mail->isHTML(true); // Ensure email is sent as HTML
+    // Kirim sebagai email HTML
+    $mail->isHTML(true);
 
-    // Define the file URL for the PDF
-    $pdfUrl = "https://billvoice.maqoli.com/invoices/900.pdf";
+    // Tentukan URL PDF dan lampirkan
+    $pdfUrl = __DIR__ . "/invoices/" . $fileId . ".pdf";  // Path ke file PDF
 
-    // Get the content of the PDF from the URL
-    $pdfContent = @file_get_contents($pdfUrl);
-
-    // Check if PDF content was successfully retrieved
-    if ($pdfContent !== false) {
-        // Ubah jalur untuk menyimpan file sementara di dalam direktori lokal
-        $tmpPdfPath = __DIR__ . '/invoices/temp/invoice_' . $fileId . '.pdf';  // Ganti dengan folder yang ada di proyek Anda
-
-        // Cek jika folder 'invoices/temp/' ada, jika tidak, buat folder tersebut
-        if (!is_dir(__DIR__ . '/invoices/temp/')) {
-            mkdir(__DIR__ . '/invoices/temp/', 0755, true);  // Buat folder dengan permission yang sesuai
-        }
-
-        // Simpan file PDF ke direktori sementara
-        file_put_contents($tmpPdfPath, $pdfContent);
-
-        // Attach the PDF file from the temporary location
-        $mail->AddAttachment($tmpPdfPath);
-
-        // Optionally, you can delete the file after sending the email
-        // unlink($tmpPdfPath);
+    // Cek apakah file PDF ada, lalu lampirkan
+    if (file_exists($pdfUrl)) {
+        $mail->addAttachment($pdfUrl);  // Lampirkan file PDF
     } else {
-        // Return error if the file content cannot be retrieved
         echo json_encode(array(
             'status' => 'Error',
-            'message' => 'Failed to download invoice file.'.$fileId
+            'message' => 'File tidak ditemukan.'
         ));
-        exit;  // Stop further processing if file cannot be downloaded
+        exit;
     }
 
-    // Send the email and handle errors
-    if (!$mail->Send()) {
-        // Error sending the email
+    // Kirim email dan cek apakah berhasil
+    if (!$mail->send()) {
         echo json_encode(array(
             'status' => 'Error',
-            'message' => 'Mailer error: ' . $mail->ErrorInfo
+            'message' => 'Error: ' . $mail->ErrorInfo
         ));
     } else {
-        // Success message after email is sent
         echo json_encode(array(
             'status' => 'Success',
-            'message' => 'Email has been successfully sent.'.$fileId
+            'message' => 'Email berhasil dikirim.'
         ));
     }
 }
