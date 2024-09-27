@@ -15,6 +15,7 @@ $action = isset($_POST['action']) ? $_POST['action'] : "";
 
 if ($action == 'email_invoice') {
 
+    $fileId = $_POST['id'];
     $emailId = $_POST['email'];
     $invoice_type = $_POST['invoice_type'];
     $custom_email = $_POST['custom_email'];
@@ -46,11 +47,23 @@ if ($action == 'email_invoice') {
         $mail->MsgHTML($custom_email); // Kirim email dalam format HTML
     }
 
-    // Remove AltBody untuk menghindari MIME multi-part
+    // Set plain text fallback to empty, since we want only HTML
     $mail->AltBody = ''; // Kosongkan AltBody
 
     // Nonaktifkan multi-part MIME dan kirim sebagai HTML saja
     $mail->isHTML(true);
+
+    // Add invoice PDF as an attachment
+    $pdfPath = "./invoices/" . $fileId . ".pdf";
+    if (file_exists($pdfPath)) {
+        $mail->AddAttachment($pdfPath); // Tambahkan lampiran PDF
+    } else {
+        echo json_encode(array(
+            'status' => 'Error',
+            'message' => 'Invoice file not found.'
+        ));
+        exit; // Stop further processing if the file doesn't exist
+    }
 
     // Send the email
     if (!$mail->Send()) {
@@ -65,6 +78,7 @@ if ($action == 'email_invoice') {
         ));
     }
 }
+
 
 
 
