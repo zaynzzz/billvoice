@@ -13,67 +13,97 @@ if ($mysqli->connect_error) {
 }
 
 $action = isset($_POST['action']) ? $_POST['action'] : "";
-// Assuming PHPMailer is already included
-
-// Check if action is 'email_invoice'
 if ($action == 'email_invoice') {
+    // Capture data from the request
+    $fileId = $_POST['id'];  // Invoice ID
+    $emailId = $_POST['email'];  // Recipient email address
 
-    // Ambil data dari request
-    $fileId = $_POST['id'];  // ID file PDF
-    $emailId = $_POST['email'];  // Alamat email penerima
-    $invoice_type = $_POST['invoice_type'];  // Tipe invoice (invoice, quote, receipt)
+    // Fetch invoice data from your database
+    // Assuming you have already connected to your database
 
-    // Inisialisasi PHPMailer
-    $mail = new PHPMailer(); 
+    // Example query to get invoice details
+    $query = "SELECT * FROM invoices WHERE invoice = '$fileId'";
+    $result = mysqli_query($conn, $query);
+    $invoice = mysqli_fetch_assoc($result);
 
-    // Setup pengirim dan penerima
-    $mail->SetFrom('antzyn@datass.uno', 'Antzyn');  // Ubah dengan detail pengirim
-    $mail->AddAddress($emailId);  // Alamat email penerima
+    // Query to get customer details
+    $query_customer = "SELECT * FROM customers WHERE invoice = '$fileId'";
+    $result_customer = mysqli_query($conn, $query_customer);
+    $customer = mysqli_fetch_assoc($result_customer);
 
-    // Tentukan subject email
-    $mail->Subject = 'Invoice Anda';
+    // Query to get invoice items
+    $query_items = "SELECT * FROM invoice_items WHERE invoice = '$fileId'";
+    $result_items = mysqli_query($conn, $query_items);
 
-    // Tentukan isi email berdasarkan tipe invoice
-    if ($invoice_type == 'invoice') {
-        $mail->Body = 'Berikut adalah invoice Anda.';
-    } elseif ($invoice_type == 'quote') {
-        $mail->Body = 'Berikut adalah penawaran Anda.';
-    } elseif ($invoice_type == 'receipt') {
-        $mail->Body = 'Berikut adalah bukti pembayaran Anda.';
+    // Create the email body (HTML format)
+    $email_body_html = "<h1>Invoice #" . $fileId . "</h1>";
+    $email_body_html .= "<p><strong>Name:</strong> " . $customer['name'] . "<br>";
+    $email_body_html .= "<strong>Email:</strong> " . $customer['email'] . "<br>";
+    $email_body_html .= "<strong>Address:</strong> " . $customer['address_1'] . "</p>";
+
+    $email_body_html .= "<h2>Invoice Details</h2>";
+    $email_body_html .= "<p><strong>Date:</strong> " . $invoice['invoice_date'] . "<br>";
+    $email_body_html .= "<strong>Due Date:</strong> " . $invoice['invoice_due_date'] . "<br>";
+    $email_body_html .= "<strong>Subtotal:</strong> " . number_format($invoice['subtotal'], 2) . "<br>";
+    $email_body_html .= "<strong>Shipping:</strong> " . number_format($invoice['shipping'], 2) . "<br>";
+    $email_body_html .= "<strong>Discount:</strong> " . number_format($invoice['discount'], 2) . "<br>";
+    $email_body_html .= "<strong>Total:</strong> " . number_format(($invoice['subtotal'] + $invoice['shipping'] - $invoice['discount']), 2) . "</p>";
+
+    $email_body_html .= "<h3>Items:</h3>";
+    $email_body_html .= "<table border='1' cellpadding='5' cellspacing='0'>";
+    $email_body_html .= "<thead><tr><th>Product</th><th>Price</th><th>Qty</th><th>Subtotal</th></tr></thead><tbody>";
+
+    // Loop through items
+    while ($item = mysqli_fetch_assoc($result_items)) {
+        $email_body_html .= "<tr>";
+        $email_body_html .= "<td>" . $item['product'] . "</td>";
+        $email_body_html .= "<td>" . number_format($item['price'], 2) . "</td>";
+        $email_body_html .= "<td>" . $item['qty'] . "</td>";
+        $email_body_html .= "<td>" . number_format($item['subtotal'], 2) . "</td>";
+        $email_body_html .= "</tr>";
+    }
+    $email_body_html .= "</tbody></table>";
+
+    // Create a plain text fallback for clients that do not support HTML
+    $email_body_plain = "Invoice #" . $fileId . "\n";
+    $email_body_plain .= "Name: " . $customer['name'] . "\n";
+    $email_body_plain .= "Email: " . $customer['email'] . "\n";
+    $email_body_plain .= "Address: " . $customer['address_1'] . "\n\n";
+    $email_body_plain .= "Invoice Details\n";
+    $email_body_plain .= "Date: " . $invoice['invoice_date'] . "\n";
+    $email_body_plain .= "Due Date: " . $invoice['invoice_due_date'] . "\n";
+    $email_body_plain .= "Subtotal: " . number_format($invoice['subtotal'], 2) . "\n";
+    $email_body_plain .= "Shipping: " . number_format($invoice['shipping'], 2) . "\n";
+    $email_body_plain .= "Discount: " . number_format($invoice['discount'], 2) . "\n";
+    $email_body_plain .= "Total: " . number_format(($invoice['subtotal'] + $invoice['shipping'] - $invoice['discount']), 2) . "\n\n";
+
+    $email_body_plain .= "Items:\n";
+    while ($item = mysqli_fetch_assoc($result_items)) {
+        $email_body_plain .= $item['product'] . " - " . number_format($item['price'], 2) . " x " . $item['qty'] . " = " . number_format($item['subtotal'], 2) . "\n";
     }
 
-    // Kirim sebagai email HTML
+    // Create a new PHPMailer instance
+    $mail = new PHPMailer();
+
+    // Setup sender and recipient
+    $mail->SetFrom('antzyn@datass.uno', 'Antzyn');  // Replace with your sender details
+    $mail->AddAddress($emailId);  // Recipient email
+
+    // Set email subject
+    $mail->Subject = 'Your Invoice #' . $fileId;
+
+    // Set email body as HTML and plain text fallback
     $mail->isHTML(true);
+    $mail->Body = $email_body_html;
+    $mail->AltBody = $email_body_plain;
 
-    // Tentukan URL PDF dan lampirkan
-    $pdfUrl = __DIR__ . "/invoices/" . $fileId . ".pdf";  // Path ke file PDF
-
-    // Cek apakah file PDF ada, lalu lampirkan
-    if (file_exists($pdfUrl)) {
-        $mail->addAttachment($pdfUrl);  // Lampirkan file PDF
+    // Send the email
+    if ($mail->Send()) {
+        echo json_encode(['status' => 'Success', 'message' => 'Email sent successfully!']);
     } else {
-        echo json_encode(array(
-            'status' => 'Error',
-            'message' => 'File tidak ditemukan.'
-        ));
-        exit;
-    }
-
-    // Kirim email dan cek apakah berhasil
-    if (!$mail->send()) {
-        echo json_encode(array(
-            'status' => 'Error',
-            'message' => 'Error: ' . $mail->ErrorInfo
-        ));
-    } else {
-        echo json_encode(array(
-            'status' => 'Success',
-            'message' => 'Email berhasil dikirim.'
-        ));
+        echo json_encode(['status' => 'Error', 'message' => 'Mailer error: ' . $mail->ErrorInfo]);
     }
 }
-
-
 
 
 // download invoice csv sheet
