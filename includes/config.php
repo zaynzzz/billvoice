@@ -12,12 +12,12 @@ ini_set('error_reporting', E_ALL);
 
 // DATABASE INFORMATION
 define('DATABASE_HOST', getenv('IP'));
+
 define('DATABASE_NAME', 'u692140442_invoices');
 define('DATABASE_USER', 'u692140442_root');
 define('DATABASE_PASS', 'sEf[/#i/r1@');
 
 // DATABASE Local
-// define('DATABASE_HOST', getenv('IP'));
 // define('DATABASE_NAME', 'invoice');
 // define('DATABASE_USER', 'root');
 // define('DATABASE_PASS', '');
@@ -39,8 +39,8 @@ define('COMPANY_VAT', 'Nomor NPWP: 01.123.456.7-891.000'); // Nomor NPWP perusah
 // EMAIL DETAILS
 define('EMAIL_FROM', 'admin@indotechsolutions.co.id'); // Email address invoice emails will be sent from
 define('EMAIL_NAME', 'PT. Indo Tech Solutions'); // Email from address
-define('EMAIL_SUBJECT', 'Faktur Pajak'); // Invoice email subject
-define('EMAIL_BODY_INVOICE', 'Berikut ini adalah faktur pajak Anda.'); // Invoice email body
+define('EMAIL_SUBJECT', 'BillVoice Billing Management System'); // Invoice email subject
+define('EMAIL_BODY_INVOICE', 'Berikut ini adalah tagihan Anda.'); // Invoice email body
 define('EMAIL_BODY_QUOTE', 'Berikut ini adalah penawaran harga.'); // Quote email body
 define('EMAIL_BODY_RECEIPT', 'Berikut ini adalah tanda terima pembayaran.'); // Receipt email body
 
