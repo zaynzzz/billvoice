@@ -41,13 +41,16 @@ if ($action == 'email_invoice') {
             $mail->MsgHTML(EMAIL_BODY_RECEIPT);
         }
     } else {
-        // Sanitasi custom email - ubah ini jika tidak perlu encoding
+        // Sanitasi custom email tanpa encoding HTML
         $custom_email = strip_tags($custom_email, '<p><a><br><strong><em>'); // Hapus tag tidak aman
         $mail->MsgHTML($custom_email); // Kirim email dalam format HTML
     }
 
-    // Set plain text fallback for email clients that don't support HTML
-    $mail->AltBody = "This is a plain-text message body for clients that do not support HTML.";
+    // Remove AltBody untuk menghindari MIME multi-part
+    $mail->AltBody = ''; // Kosongkan AltBody
+
+    // Nonaktifkan multi-part MIME dan kirim sebagai HTML saja
+    $mail->isHTML(true);
 
     // Send the email
     if (!$mail->Send()) {
@@ -61,8 +64,8 @@ if ($action == 'email_invoice') {
             'message' => 'Email has been successfully sent to the customer.'
         ));
     }
-
 }
+
 
 
 // download invoice csv sheet
