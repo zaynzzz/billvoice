@@ -98,40 +98,40 @@ if ($action == 'email_invoice') {
     imagefilledrectangle($image, 0, 0, $width, $height, $white);
 
     // Path ke font (pastikan font ada di direktori yang benar)
-    // $font = __DIR__ . '/fonts/arial.ttf';  // Pastikan Anda mengunggah font ini
+    $font = __DIR__ . '/fonts/poppins.ttf';  // Pastikan Anda mengunggah font ini
 
     // Menulis teks pada gambar
     $y = 20;  // Mulai dari posisi y=20
 
-    imagettftext($image, 14, 0, 10, $y, $black, "Invoice #$fileId");
+    imagettftext($image, 14, 0, 10, $y, $black, $font, "Invoice #$fileId");
     $y += 30;
-    imagettftext($image, 12, 0, 10, $y, $black, "Name: " . $customer['name']);
+    imagettftext($image, 12, 0, 10, $y, $black, $font, "Name: " . $customer['name']);
     $y += 20;
-    imagettftext($image, 12, 0, 10, $y, $black, "Email: " . $customer['email']);
+    imagettftext($image, 12, 0, 10, $y, $black, $font, "Email: " . $customer['email']);
     $y += 20;
-    imagettftext($image, 12, 0, 10, $y, $black, "Address: " . $customer['address_1']);
+    imagettftext($image, 12, 0, 10, $y, $black, $font, "Address: " . $customer['address_1']);
     $y += 40;
 
-    imagettftext($image, 12, 0, 10, $y, $black, "Invoice Details");
+    imagettftext($image, 12, 0, 10, $y, $black, $font, "Invoice Details");
     $y += 20;
-    imagettftext($image, 12, 0, 10, $y, $black, "Date: " . $invoice['invoice_date']);
+    imagettftext($image, 12, 0, 10, $y, $black, $font, "Date: " . $invoice['invoice_date']);
     $y += 20;
-    imagettftext($image, 12, 0, 10, $y, $black, "Due Date: " . $invoice['invoice_due_date']);
+    imagettftext($image, 12, 0, 10, $y, $black, $font, "Due Date: " . $invoice['invoice_due_date']);
     $y += 20;
-    imagettftext($image, 12, 0, 10, $y, $black, "Subtotal: Rp." . number_format($invoice['subtotal'], 2));
+    imagettftext($image, 12, 0, 10, $y, $black, $font, "Subtotal: Rp." . number_format($invoice['subtotal'], 2));
     $y += 20;
-    imagettftext($image, 12, 0, 10, $y, $black, "Shipping: Rp." . number_format($invoice['shipping'], 2));
+    imagettftext($image, 12, 0, 10, $y, $black, $font, "Shipping: Rp." . number_format($invoice['shipping'], 2));
     $y += 20;
-    imagettftext($image, 12, 0, 10, $y, $black, "Discount: Rp." . number_format($invoice['discount'], 2));
+    imagettftext($image, 12, 0, 10, $y, $black, $font, "Discount: Rp." . number_format($invoice['discount'], 2));
     $y += 20;
-    imagettftext($image, 12, 0, 10, $y, $black, "Total: Rp." . number_format(($invoice['subtotal'] + $invoice['shipping'] - $invoice['discount']), 2));
+    imagettftext($image, 12, 0, 10, $y, $black, $font, "Total: Rp." . number_format(($invoice['subtotal'] + $invoice['shipping'] - $invoice['discount']), 2));
     $y += 40;
 
-    imagettftext($image, 12, 0, 10, $y, $black, "Items:");
+    imagettftext($image, 12, 0, 10, $y, $black, $font, "Items:");
     $y += 20;
 
     foreach ($items as $item) {
-        imagettftext($image, 12, 0, 10, $y, $black, $item['product'] . " - Rp." . number_format($item['price'], 2) . " x " . $item['qty'] . " = Rp." . number_format($item['subtotal'], 2));
+        imagettftext($image, 12, 0, 10, $y, $black, $font, $item['product'] . " - Rp." . number_format($item['price'], 2) . " x " . $item['qty'] . " = Rp." . number_format($item['subtotal'], 2));
         $y += 20;
     }
 
