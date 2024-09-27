@@ -17,7 +17,7 @@ define('DATABASE_NAME', 'u692140442_invoices');
 define('DATABASE_USER', 'u692140442_root');
 define('DATABASE_PASS', 'sEf[/#i/r1@');
 
-// DATABASE Local
+// DATABASE Local 
 // define('DATABASE_NAME', 'invoice');
 // define('DATABASE_USER', 'root');
 // define('DATABASE_PASS', '');
