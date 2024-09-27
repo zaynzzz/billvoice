@@ -13,27 +13,49 @@ if ($mysqli->connect_error) {
 }
 
 $action = isset($_POST['action']) ? $_POST['action'] : "";
+<?php
+
+include_once('includes/config.php');  // Ensure this file contains your database connection details
+require_once('class.phpmailer.php');
+
+// show PHP errors
+ini_set('display_errors', 1);
+
+// Output any connection error
+if ($mysqli->connect_error) {
+    die('Error : ('. $mysqli->connect_errno .') '. $mysqli->connect_error);
+}
+
+// Check if action is 'email_invoice'
+$action = isset($_POST['action']) ? $_POST['action'] : "";
 if ($action == 'email_invoice') {
     // Capture data from the request
     $fileId = $_POST['id'];  // Invoice ID
     $emailId = $_POST['email'];  // Recipient email address
 
-    // Fetch invoice data from your database
-    // Assuming you have already connected to your database
-
+    // Use $mysqli or $conn for your MySQL connection (depending on what you are using in config.php)
     // Example query to get invoice details
     $query = "SELECT * FROM invoices WHERE invoice = '$fileId'";
-    $result = mysqli_query($conn, $query);
+    $result = mysqli_query($mysqli, $query);  // Assuming $mysqli is your MySQLi connection variable
+    if (!$result) {
+        die('Query error: ' . mysqli_error($mysqli));
+    }
     $invoice = mysqli_fetch_assoc($result);
 
     // Query to get customer details
     $query_customer = "SELECT * FROM customers WHERE invoice = '$fileId'";
-    $result_customer = mysqli_query($conn, $query_customer);
+    $result_customer = mysqli_query($mysqli, $query_customer);
+    if (!$result_customer) {
+        die('Query error: ' . mysqli_error($mysqli));
+    }
     $customer = mysqli_fetch_assoc($result_customer);
 
     // Query to get invoice items
     $query_items = "SELECT * FROM invoice_items WHERE invoice = '$fileId'";
-    $result_items = mysqli_query($conn, $query_items);
+    $result_items = mysqli_query($mysqli, $query_items);
+    if (!$result_items) {
+        die('Query error: ' . mysqli_error($mysqli));
+    }
 
     // Create the email body (HTML format)
     $email_body_html = "<h1>Invoice #" . $fileId . "</h1>";
@@ -78,6 +100,7 @@ if ($action == 'email_invoice') {
     $email_body_plain .= "Total: " . number_format(($invoice['subtotal'] + $invoice['shipping'] - $invoice['discount']), 2) . "\n\n";
 
     $email_body_plain .= "Items:\n";
+    mysqli_data_seek($result_items, 0); // reset pointer for while loop again
     while ($item = mysqli_fetch_assoc($result_items)) {
         $email_body_plain .= $item['product'] . " - " . number_format($item['price'], 2) . " x " . $item['qty'] . " = " . number_format($item['subtotal'], 2) . "\n";
     }
