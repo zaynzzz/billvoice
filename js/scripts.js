@@ -4,6 +4,15 @@
 * Version: 1.1.1	                                                               *
 * Author:  James Brandon                                    				   *
 *******************************************************************************/
+/*******************************************************************************
+* Simplified PHP Invoice System                                                *
+*                                                                              *
+* Version: 1.1.1	                                                               *
+* Author:  James Brandon                                    				   *
+*******************************************************************************/
+function formatRupiah(amount) {
+	return 'Rp ' + parseFloat(amount).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+}
 
 $(document).ready(function() {
 

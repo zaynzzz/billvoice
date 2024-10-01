@@ -32,7 +32,12 @@
 	<script src="js/bootstrap.datetime.js"></script>
 	<script src="js/bootstrap.password.js"></script>
 	<script src="js/scripts.js"></script>
-	
+	<script>
+
+function formatRupiah(amount) {
+            return 'Rp ' + parseFloat(amount).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        }
+  </script>
 	<!-- AdminLTE App -->
 	<script src="js/app.min.js"></script>
 
