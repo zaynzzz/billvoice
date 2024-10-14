@@ -649,61 +649,44 @@ if($action == 'update_customer') {
 	$mysqli->close();
 	
 }
+if ($action == 'update_product') {
+    $id = $_POST['id'];
+    $product_name = $_POST['product_name'];
+    $product_desc = $_POST['product_desc'];
+    $imei = isset($_POST['imei']) ? $_POST['imei'] : null; // Optional
+    $gps_type = isset($_POST['gps_type']) ? $_POST['gps_type'] : null; // Optional
 
-// Update product
-if($action == 'update_product') {
+    // Update query without product_price
+    $query = "UPDATE products SET 
+                product_name = ?, 
+                product_desc = ?, 
+                imei = ?, 
+                gps_type = ? 
+              WHERE product_id = ?";
 
-	// output any connection error
-	if ($mysqli->connect_error) {
-	    die('Error : ('. $mysqli->connect_errno .') '. $mysqli->connect_error);
-	}
+    $stmt = $mysqli->prepare($query);
+    if ($stmt === false) {
+        trigger_error('Wrong SQL: ' . $query . ' Error: ' . $mysqli->error, E_USER_ERROR);
+    }
 
-	// invoice product information
-	$getID = $_POST['id']; // id
-	$product_name = $_POST['product_name']; // product name
-	$product_desc = $_POST['product_desc']; // product desc
-	$product_price = $_POST['product_price']; // product price
+    // Bind parameters, without product_price
+    $stmt->bind_param('ssssi', $product_name, $product_desc, $imei, $gps_type, $id);
 
-	// the query
-	$query = "UPDATE products SET
-				product_name = ?,
-				product_desc = ?,
-				product_price = ?
-			 WHERE product_id = ?
-			";
+    if ($stmt->execute()) {
+        echo json_encode(array(
+            'status' => 'Success',
+            'message' => 'Product has been updated successfully!'
+        ));
+    } else {
+        echo json_encode(array(
+            'status' => 'Error',
+            'message' => 'There has been an error, please try again.<pre>' . $mysqli->error . '</pre><pre>' . $query . '</pre>'
+        ));
+    }
 
-	/* Prepare statement */
-	$stmt = $mysqli->prepare($query);
-	if($stmt === false) {
-	  trigger_error('Wrong SQL: ' . $query . ' Error: ' . $mysqli->error, E_USER_ERROR);
-	}
-
-	/* Bind parameters. TYpes: s = string, i = integer, d = double,  b = blob */
-	$stmt->bind_param(
-		'ssss',
-		$product_name,$product_desc,$product_price,$getID
-	);
-
-	//execute the query
-	if($stmt->execute()){
-	    //if saving success
-		echo json_encode(array(
-			'status' => 'Success',
-			'message'=> 'Product has been updated successfully!'
-		));
-
-	} else {
-	    //if unable to create new record
-	    echo json_encode(array(
-	    	'status' => 'Error',
-	    	//'message'=> 'There has been an error, please try again.'
-	    	'message' => 'There has been an error, please try again.<pre>'.$mysqli->error.'</pre><pre>'.$query.'</pre>'
-	    ));
-	}
-
-	//close database connection
-	$mysqli->close();
-	
+    // Close statement and connection
+    $stmt->close();
+    $mysqli->close();
 }
 
 
@@ -1032,57 +1015,109 @@ if($action == 'login') {
     }
 }
 
-// Adding new product
-if($action == 'add_product') {
+// Adding new product// Adding new product
+if ($action == 'add_product') {
 
-	$product_name = $_POST['product_name'];
-	$product_desc = $_POST['product_desc'];
-	$product_price = $_POST['product_price'];
+    $product_name = $_POST['product_name'];
+    $product_desc = $_POST['product_desc'];
+    $imei = $_POST['imei']; // New field for IMEI
+    $gps_type = $_POST['gps_type']; // New field for GPS type
 
-	//our insert query query
-	$query  = "INSERT INTO products
-				(
-					product_name,
-					product_desc,
-					product_price
-				)
-				VALUES (
-					?, 
-                	?,
-                	?
+    // Our insert query
+    $query = "INSERT INTO products
+                (
+                    product_name,
+                    product_desc,
+                    imei,
+                    gps_type
+                )
+                VALUES (
+                    ?, 
+                    ?, 
+                    ?, 
+                    ?
+                );";
+
+    header('Content-Type: application/json');
+
+    /* Prepare statement */
+    $stmt = $mysqli->prepare($query);
+    if ($stmt === false) {
+        trigger_error('Wrong SQL: ' . $query . ' Error: ' . $mysqli->error, E_USER_ERROR);
+    }
+
+    /* Bind parameters. Types: s = string, i = integer, d = double, b = blob */
+    $stmt->bind_param('ssss', $product_name, $product_desc, $imei, $gps_type); // Changed to 'ssss'
+
+    if ($stmt->execute()) {
+        // If saving success
+        echo json_encode(array(
+            'status' => 'Success',
+            'message' => 'Product has been added successfully!'
+        ));
+    } else {
+        // If unable to create new record
+        echo json_encode(array(
+            'status' => 'Error',
+            'message' => 'There has been an error, please try again.<pre>' . $mysqli->error . '</pre><pre>' . $query . '</pre>'
+        ));
+    }
+
+    // Close database connection
+    $mysqli->close();
+}
+
+// Adding new GPS rental package
+if($action == 'add_package') {
+    $package_name = $_POST['package_name'];
+    $package_desc = $_POST['package_desc'];
+    $package_price = $_POST['package_price'];
+
+    // Query untuk memasukkan paket penyewaan GPS
+    $query  = "INSERT INTO gps_packages
+                (
+                    package_name,
+                    package_desc,
+                    package_price
+                )
+                VALUES (
+                    ?, 
+                    ?,
+                    ?
                 );
               ";
 
     header('Content-Type: application/json');
 
-	/* Prepare statement */
-	$stmt = $mysqli->prepare($query);
-	if($stmt === false) {
-	  trigger_error('Wrong SQL: ' . $query . ' Error: ' . $mysqli->error, E_USER_ERROR);
-	}
+    /* Prepare statement */
+    $stmt = $mysqli->prepare($query);
+    if($stmt === false) {
+      trigger_error('Wrong SQL: ' . $query . ' Error: ' . $mysqli->error, E_USER_ERROR);
+    }
 
-	/* Bind parameters. TYpes: s = string, i = integer, d = double,  b = blob */
-	$stmt->bind_param('sss',$product_name,$product_desc,$product_price);
+    /* Bind parameters. TYpes: s = string, i = integer, d = double,  b = blob */
+    $stmt->bind_param('sss', $package_name, $package_desc, $package_price);
 
-	if($stmt->execute()){
-	    //if saving success
-		echo json_encode(array(
-			'status' => 'Success',
-			'message'=> 'Product has been added successfully!'
-		));
+    if($stmt->execute()){
+        // Jika berhasil menyimpan
+        echo json_encode(array(
+            'status' => 'Success',
+            'message'=> 'GPS rental package has been added successfully!'
+        ));
 
-	} else {
-	    //if unable to create new record
-	    echo json_encode(array(
-	    	'status' => 'Error',
-	    	//'message'=> 'There has been an error, please try again.'
-	    	'message' => 'There has been an error, please try again.<pre>'.$mysqli->error.'</pre><pre>'.$query.'</pre>'
-	    ));
-	}
+    } else {
+        // Jika gagal menyimpan
+        echo json_encode(array(
+            'status' => 'Error',
+            'message' => 'There has been an error, please try again.<pre>'.$mysqli->error.'</pre><pre>'.$query.'</pre>'
+        ));
+    }
 
-	//close database connection
-	$mysqli->close();
+    // Menutup koneksi database
+    $stmt->close();
+    $mysqli->close();
 }
+
 
 // Adding new user
 if($action == 'add_user') {

@@ -30,6 +30,8 @@ $(document).ready(function() {
 		e.preventDefault();
 	    actionAddProduct();
 	});
+	
+	// Klik tombol submit akan memanggil fungsi ini
 
 	// password strength
 	var options = {
@@ -363,7 +365,7 @@ $(document).ready(function() {
 	    }
 
 	}
-
+	
 	function actionAddUser() {
 
 		var errorCounter = validateForm();
@@ -403,43 +405,46 @@ $(document).ready(function() {
 	}
 
 	function actionAddProduct() {
-
 		var errorCounter = validateForm();
-
+	
+		// Additional validation for IMEI field (optional)
+		var imei = $("input[name='imei']").val();
+		if (imei && !/^\d{15}$/.test(imei)) {
+			errorCounter++;
+			$(".required[name='imei']").parent().addClass("has-error");
+		}
+	
+		// Show error message if validation fails
 		if (errorCounter > 0) {
-		    $("#response").removeClass("alert-success").addClass("alert-warning").fadeIn();
-		    $("#response .message").html("<strong>Error</strong>: It appear's you have forgotten to complete something!");
-		    $("html, body").animate({ scrollTop: $('#response').offset().top }, 1000);
+			$("#response").removeClass("alert-success").addClass("alert-warning").fadeIn();
+			$("#response .message").html("<strong>Error</strong>: It appears you have forgotten to complete something!");
+			$("html, body").animate({ scrollTop: $('#response').offset().top }, 1000);
 		} else {
-
-			$(".required").parent().removeClass("has-error");
-
+			$(".required").parent().removeClass("has-error"); // Clear previous errors
+	
 			var $btn = $("#action_add_product").button("loading");
-
+	
 			$.ajax({
-
 				url: 'response.php',
 				type: 'POST',
 				data: $("#add_product").serialize(),
 				dataType: 'json',
-				success: function(data){
+				success: function(data) {
 					$("#response .message").html("<strong>" + data.status + "</strong>: " + data.message);
 					$("#response").removeClass("alert-warning").addClass("alert-success").fadeIn();
 					$("html, body").animate({ scrollTop: $('#response').offset().top }, 1000);
 					$btn.button("reset");
 				},
-				error: function(data){
+				error: function(data) {
 					$("#response .message").html("<strong>" + data.status + "</strong>: " + data.message);
 					$("#response").removeClass("alert-success").addClass("alert-warning").fadeIn();
 					$("html, body").animate({ scrollTop: $('#response').offset().top }, 1000);
 					$btn.button("reset");
 				}
-
 			});
 		}
-
 	}
-
+	
 	function actionCreateCustomer(){
 
 		var errorCounter = validateForm();

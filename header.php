@@ -10,7 +10,7 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>Rapid Invoice</title>
+  <title>Billvoice</title>
   <!-- Tell the browser to be responsive to screen width -->
   <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
  
@@ -125,7 +125,7 @@ function formatRupiah(amount) {
           </ul>
         </li>
         <!-- Menu 2 -->
-         <li class="treeview">
+        <li class="treeview">
           <a href="#"><i class="fa fa-shopping-basket"></i><span>Items</span>
             <span class="pull-right-container">
               <i class="fa fa-angle-left pull-right"></i>
@@ -138,6 +138,18 @@ function formatRupiah(amount) {
         </li>
         <!-- Menu 3 -->
         <li class="treeview">
+          <a href="#"><i class="fa fa-shopping-basket"></i><span>Package</span>
+            <span class="pull-right-container">
+              <i class="fa fa-angle-left pull-right"></i>
+            </span>
+          </a>
+          <ul class="treeview-menu">
+            <li><a href="package-add.php"><i class="fa fa-plus"></i>Add Package</a></li>
+            <li><a href="package-list.php"><i class="fa fa-cog"></i>Manage Package</a></li>
+          </ul>
+        </li>
+        <!-- Menu 4 -->
+        <li class="treeview">
           <a href="#"><i class="fa fa-users"></i><span>Customers</span>
             <span class="pull-right-container">
               <i class="fa fa-angle-left pull-right"></i>
@@ -149,7 +161,7 @@ function formatRupiah(amount) {
           </ul>
         </li>
         
-        <!-- Menu 4 -->
+        <!-- Menu 5 -->
         <li class="treeview">
           <a href="#"><i class="fa fa-user"></i><span>Users</span>
             <span class="pull-right-container">

@@ -201,6 +201,43 @@ function popCustomersList() {
 	$mysqli->close();
 
 }
+function getPackages() {
+    // Connect to the database
+    $mysqli = new mysqli(DATABASE_HOST, DATABASE_USER, DATABASE_PASS, DATABASE_NAME);
+    
+    // Output any connection error
+    if ($mysqli->connect_error) {
+        die('Error : ('.$mysqli->connect_errno .') '. $mysqli->connect_error);
+    }
+
+    // Fetch packages
+    $query = "SELECT * FROM gps_packages"; // Adjust the table name as necessary
+    $result = $mysqli->query($query);
+
+    if ($result->num_rows > 0) {
+        echo '<table class="table table-striped">';
+        echo '<thead><tr><th>Package Name</th><th>Description</th><th>Price</th><th>Actions</th></tr></thead>';
+        echo '<tbody>';
+        while ($row = $result->fetch_assoc()) {
+            echo '<tr>';
+            echo '<td>' . $row['package_name'] . '</td>';
+            echo '<td>' . $row['package_desc'] . '</td>';
+            echo '<td>' . $row['package_price'] . '</td>';
+            echo '<td>
+                    <a href="package-edit.php?id=' . $row['package_id'] . '" class="btn btn-warning">Edit</a>
+                    <button class="btn btn-danger" data-toggle="modal" data-target="#confirm" data-id="' . $row['package_id'] . '">Delete</button>
+                  </td>';
+            echo '</tr>';
+        }
+        echo '</tbody>';
+        echo '</table>';
+    } else {
+        echo '<p>No GPS packages found.</p>';
+    }
+
+    // Close the connection
+    $mysqli->close();
+}
 
 // get products list
 function getProducts() {
@@ -225,7 +262,8 @@ function getProducts() {
 
 				<th><h4>Product</h4></th>
 				<th><h4>Description</h4></th>
-				<th><h4>Price</h4></th>
+				<th><h4>Imei</h4></th>
+				<th><h4>GPS Type</h4></th>
 				<th><h4>Action</h4></th>
 
 			  </tr></thead><tbody>';
@@ -236,7 +274,8 @@ function getProducts() {
 			    <tr>
 					<td>'.$row["product_name"].'</td>
 				    <td>'.$row["product_desc"].'</td>
-				    <td>'.$row["product_price"].'</td>
+				    <td>'.$row["imei"].'</td>
+				    <td>'.$row["gps_type"].'</td>
 				    <td><a href="product-edit.php?id='.$row["product_id"].'" class="btn btn-primary btn-xs"><span class="glyphicon glyphicon-edit" aria-hidden="true"></span></a> <a data-product-id="'.$row['product_id'].'" class="btn btn-danger btn-xs delete-product"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span></a></td>
 			    </tr>
 		    ';
