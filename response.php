@@ -1066,7 +1066,6 @@ if ($action == 'add_product') {
     // Close database connection
     $mysqli->close();
 }
-
 // Adding new GPS rental package
 if($action == 'add_package') {
     $package_name = $_POST['package_name'];
@@ -1095,8 +1094,8 @@ if($action == 'add_package') {
       trigger_error('Wrong SQL: ' . $query . ' Error: ' . $mysqli->error, E_USER_ERROR);
     }
 
-    /* Bind parameters. TYpes: s = string, i = integer, d = double,  b = blob */
-    $stmt->bind_param('sss', $package_name, $package_desc, $package_price);
+    /* Bind parameters. Types: s = string, i = integer, d = double, b = blob */
+    $stmt->bind_param('ssd', $package_name, $package_desc, $package_price);
 
     if($stmt->execute()){
         // Jika berhasil menyimpan
@@ -1117,6 +1116,7 @@ if($action == 'add_package') {
     $stmt->close();
     $mysqli->close();
 }
+
 
 
 // Adding new user
