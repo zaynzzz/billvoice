@@ -1390,7 +1390,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_POST['action'] === 'delete_packag
     $mysqli->close();
     exit;
 }
-?>
 
 // Delete User
 if($action == 'delete_customer') {
