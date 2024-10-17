@@ -2,7 +2,7 @@
 header('Content-Type: application/json');
 
 // Database connection
-$mysqli = new mysqli('localhost', 'root', 'root', 'invoice');
+$mysqli = new mysqli(DATABASE_HOST, DATABASE_USER, DATABASE_PASS, DATABASE_NAME);
 
 if ($mysqli->connect_error) {
     die("Connection failed: " . $mysqli->connect_error);
