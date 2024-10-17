@@ -63,24 +63,24 @@ function renderCharts(data) {
         }
     });
 }
-
-// Fetch data and populate charts
 fetch('data.php')
-    .then(response => {
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        return response.json();
-    })
+    .then(response => response.json())
     .then(data => {
-        console.log(data);
         // Update Statistics
         document.getElementById('total-customers').innerText = data.totalCustomers;
         document.getElementById('total-packages').innerText = data.totalPackages;
         document.getElementById('total-invoices').innerText = data.totalInvoices;
-        document.getElementById('total-revenue').innerText = data.totalRevenue.toLocaleString();
+
+        // Convert totalRevenue to a number and format it as currency (IDR)
+        let totalRevenue = parseInt(data.totalRevenue, 10); // Ensure it's treated as a number
+        document.getElementById('total-revenue').innerText = totalRevenue.toLocaleString('id-ID', {
+            style: 'currency',
+            currency: 'IDR',
+            minimumFractionDigits: 0 // No decimal places
+        });
 
         // Render the charts
+        renderOverallStatsChart(data);
         renderCharts(data);
     })
     .catch(error => {
