@@ -5,7 +5,7 @@ include('functions.php');
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Dashboard - Charts</title>
+    <title>Dashboard</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
@@ -74,8 +74,8 @@ include('functions.php');
 <body>
 <div class="container">
     <div class="header">
-        <h1>Dashboard - Charts</h1>
-        <p>Analyze your data with beautiful charts</p>
+        <h1>Dashboard</h1>
+        <p></p>
     </div>
     <div class="stats">
         <div class="stat">

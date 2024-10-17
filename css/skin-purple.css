@@ -116,7 +116,7 @@
 .header {
   font-size: 1.2rem; /* Increase font size */
   letter-spacing: 0.1rem; /* Add spacing between letters */
-  border-bottom: 2px solid #ddd; /* Subtle bottom border */
+  /* border-bottom: 2px solid #ddd; Subtle bottom border */
   text-align: center; /* Center the text */
 }
 

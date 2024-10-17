@@ -109,9 +109,10 @@ function formatRupiah(amount) {
 
       <!-- Sidebar Menu -->
       <ul class="sidebar-menu">
-      <li class="nav-item header text-uppercase fw-bold py-2 px-3 bg-light text-center">
-          <h5>Dashboard</h5> 
-        </li>
+      <li class="nav-item header text-uppercase fw-bold py-2 px-3 bg-success text-center">
+    <h5><a href="Home.php" style="color: #004997;"><i class="bg-success"></i><span>Dashboard</span></a></h5>
+</li>
+
         <!-- Menu 1 -->
          <!-- <li class="treeview">
           <a href="#"><i class="fa fa-file-text-o"></i> <span>Invoices</span>
