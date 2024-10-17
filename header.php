@@ -32,6 +32,7 @@
 	<script src="js/bootstrap.datetime.js"></script>
 	<script src="js/bootstrap.password.js"></script>
 	<script src="js/scripts.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 	<script>
 
 function formatRupiah(amount) {
@@ -112,7 +113,7 @@ function formatRupiah(amount) {
           <h5>Dashboard</h5> 
         </li>
         <!-- Menu 1 -->
-         <li class="treeview">
+         <!-- <li class="treeview">
           <a href="#"><i class="fa fa-file-text-o"></i> <span>Invoices</span>
             <span class="pull-right-container">
               <i class="fa fa-angle-left pull-right"></i>
@@ -123,7 +124,7 @@ function formatRupiah(amount) {
             <li><a href="invoice-list.php"><i class="fa fa-cog"></i>Manage Invoices</a></li>
             <li><a href="#" class="download-csv"><i class="fa fa-download"></i>Download CSV</a></li>
           </ul>
-        </li>
+        </li> -->
         <!-- Menu 2 -->
         <li class="treeview">
           <a href="#"><i class="fa fa-shopping-basket"></i><span>Items</span>

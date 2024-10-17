@@ -28,24 +28,26 @@ include('functions.php');
 	</div>
 </div>
 
-<!-- Confirmation Modal for Deletion -->
-<div id="confirm" class="modal fade">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title">Delete GPS Package</h4>
-      </div>
-      <div class="modal-body">
-        <p>Are you sure you want to delete this GPS package?</p>
-      </div>
-      <div class="modal-footer">
-        <button type="button" data-dismiss="modal" class="btn btn-primary" id="delete">Delete</button>
-		<button type="button" data-dismiss="modal" class="btn">Cancel</button>
-      </div>
-    </div><!-- /.modal-content -->
-  </div><!-- /.modal-dialog -->
-</div><!-- /.modal -->
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="delete_package_modal" tabindex="-1" role="dialog" aria-labelledby="deletePackageModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deletePackageModalLabel">Confirm Delete</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete this package? This action cannot be undone.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" id="confirm_delete" class="btn btn-danger">Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <?php
 	include('footer.php');

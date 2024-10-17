@@ -30,6 +30,10 @@ $(document).ready(function() {
 		e.preventDefault();
 	    actionAddProduct();
 	});
+	$("#action_update_package").click(function(e) {
+		e.preventDefault();
+	    actionUpdatePackage();
+	});
 	
 	// Klik tombol submit akan memanggil fungsi ini
 
@@ -62,12 +66,12 @@ $(document).ready(function() {
 
         var userId = 'action=delete_user&delete='+ $(this).attr('data-user-id'); //build a post data structure
         var user = $(this);
-
-	    $('#delete_user').modal({ backdrop: 'static', keyboard: false }).one('click', '#delete', function() {
-			deleteUser(userId);
-			$(user).closest('tr').remove();
-        });
-   	});
+		
+				$('#delete_user').modal({ backdrop: 'static', keyboard: false }).one('click', '#delete', function() {
+					deleteUser(userId);
+					$(user).closest('tr').remove();
+				});
+	});
 
    	// delete customer
 	$(document).on('click', ".delete-customer", function(e) {
@@ -81,6 +85,52 @@ $(document).ready(function() {
 			$(user).closest('tr').remove();
         });
    	});
+	   $(document).ready(function() {
+		var packageIdToDelete = null;
+	
+		// When the delete button is clicked, store the package ID
+		$('.delete-package-btn').on('click', function() {
+			packageIdToDelete = $(this).data('id');
+		});
+	
+		// Confirm deletion and send AJAX request
+		$('#confirm_delete').on('click', function() {
+			if (packageIdToDelete) {
+				$.ajax({
+					url: 'response.php',
+					type: 'POST',
+					data: {
+						action: 'delete_package',
+						package_id: packageIdToDelete
+					},
+					dataType: 'json',
+					success: function(data) {
+						if (data.status === 'Success') {
+							$("#response .message").html("<strong>" + data.status + "</strong>: " + data.message);
+							$("#response").removeClass("alert-warning").addClass("alert-success").fadeIn();
+							
+							// Remove the deleted package row from the table
+							$('button[data-id="' + packageIdToDelete + '"]').closest('tr').remove();
+	
+							// Hide the modal
+							$('#delete_package_modal').modal('hide');
+						} else {
+							$("#response .message").html("<strong>Error</strong>: " + data.message);
+							$("#response").removeClass("alert-success").addClass("alert-warning").fadeIn();
+						}
+						$("html, body").animate({ scrollTop: $('#response').offset().top }, 1000);
+					},
+					error: function(xhr, status, error) {
+						console.error("AJAX Error: ", status, error);
+						console.log("Response Text:", xhr.responseText); // Log full server response
+	
+						$("#response .message").html("<strong>Error</strong>: An unexpected error occurred. Please check the console for more details.");
+						$("#response").removeClass("alert-success").addClass("alert-warning").fadeIn();
+					}
+				});
+			}
+		});
+	});
 
 	// update customer
 	$(document).on('click', "#action_update_customer", function(e) {
@@ -403,7 +453,147 @@ $(document).ready(function() {
 		}
 
 	}
+	function actionUpdateProduct() {
+		var errorCounter = validateForm();
+	
+		// Additional validation for IMEI field (optional)
+		var imei = $("input[name='imei']").val();
+		if (imei && !/^\d{15}$/.test(imei)) {
+			errorCounter++;
+			$(".required[name='imei']").parent().addClass("has-error");
+		}
+	
+		// Show error message if validation fails
+		if (errorCounter > 0) {
+			$("#response").removeClass("alert-success").addClass("alert-warning").fadeIn();
+			$("#response .message").html("<strong>Error</strong>: It appears you have forgotten to complete something!");
+			$("html, body").animate({ scrollTop: $('#response').offset().top }, 1000);
+		} else {
+			$(".required").parent().removeClass("has-error"); // Clear previous errors
+	
+			var $btn = $("#action_update_product").button("loading");
+	
+			$.ajax({
+				url: 'response.php',
+				type: 'POST',
+				data: $("#update_product").serialize(),
+				dataType: 'json',
+				success: function(data) {
+					if (data.status === 'Success') {
+						$("#response .message").html("<strong>" + data.status + "</strong>: " + data.message);
+						$("#response").removeClass("alert-warning").addClass("alert-success").fadeIn();
+					} else {
+						$("#response .message").html("<strong>Error</strong>: " + data.message);
+						$("#response").removeClass("alert-success").addClass("alert-warning").fadeIn();
+					}
+					$("html, body").animate({ scrollTop: $('#response').offset().top }, 1000);
+					$btn.button("reset");
+				},
+				error: function(xhr, status, error) {
+					console.error("AJAX Error: ", status, error);
+					console.log("Response Text:", xhr.responseText); // Log full server response
+	
+					$("#response .message").html("<strong>Error</strong>: An unexpected error occurred. Please check the console for more details.");
+					$("#response").removeClass("alert-success").addClass("alert-warning").fadeIn();
+					$("html, body").animate({ scrollTop: $('#response').offset().top }, 1000);
+					$btn.button("reset");
+				}
+			});
+		}
+	}
+	function actionDeletePackage(packageId) {
+		// Confirm deletion
+		if (!confirm("Are you sure you want to delete this package?")) {
+			return;
+		}
+	
+		var $btn = $("#action_delete_package").button("loading");
+	
+		$.ajax({
+			url: 'response.php',
+			type: 'POST',
+			data: {
+				action: 'delete_package',
+				package_id: packageId
+			},
+			dataType: 'json',
+			success: function(data) {
+				if (data.status === 'Success') {
+					$("#response .message").html("<strong>" + data.status + "</strong>: " + data.message);
+					$("#response").removeClass("alert-warning").addClass("alert-success").fadeIn();
+					// Optionally redirect or remove deleted item from the UI
+				} else {
+					$("#response .message").html("<strong>Error</strong>: " + data.message);
+					$("#response").removeClass("alert-success").addClass("alert-warning").fadeIn();
+				}
+				$("html, body").animate({ scrollTop: $('#response').offset().top }, 1000);
+				$btn.button("reset");
+			},
+			error: function(xhr, status, error) {
+				console.error("AJAX Error: ", status, error);
+				console.log("Response Text:", xhr.responseText); // Log full server response
+	
+				$("#response .message").html("<strong>Error</strong>: An unexpected error occurred. Please check the console for more details.");
+				$("#response").removeClass("alert-success").addClass("alert-warning").fadeIn();
+				$("html, body").animate({ scrollTop: $('#response').offset().top }, 1000);
+				$btn.button("reset");
+			}
+		});
+	}
+	
+	function actionUpdatePackage() {
+		var errorCounter = validateForm();
+	
+		// Additional validation for package price field (optional)
+		var packagePrice = $("input[name='package_price']").val();
+		if (packagePrice && isNaN(packagePrice)) {
+			errorCounter++;
+			$("input[name='package_price']").parent().addClass("has-error");
+		}
+	
+		// Show error message if validation fails
+		if (errorCounter > 0) {
+			$("#response").removeClass("alert-success").addClass("alert-warning").fadeIn();
+			$("#response .message").html("<strong>Error</strong>: It appears you have forgotten to complete something!");
+			$("html, body").animate({ scrollTop: $('#response').offset().top }, 1000);
+		} else {
+			$(".required").parent().removeClass("has-error"); // Clear previous errors
+	
+			var $btn = $("#action_update_package").button("loading");
+	
+			$.ajax({
+				url: 'response.php',
+				type: 'POST',
+				data: $("#update_package").serialize(),
+				dataType: 'json',
+				success: function(data) {
 
+					if (data.status === 'Success') {
+						$("#response .message").html("<strong>" + data.status + "</strong>: " + data.message);
+						$("#response").removeClass("alert-warning").addClass("alert-success").fadeIn();
+					} else {
+						$("#response .message").html("<strong>Error</strong>: " + data.message);
+						$("#response").removeClass("alert-success").addClass("alert-warning").fadeIn();
+					}
+					$("html, body").animate({ scrollTop: $('#response').offset().top }, 1000);
+					$btn.button("reset");
+				},
+				error: function(xhr, status, error) {
+					alert('xxx')
+
+					console.error("AJAX Error: ", status, error);
+					console.log("Response Text:", xhr.responseText); // Log full server response
+	
+					$("#response .message").html("<strong>Error</strong>: An unexpected error occurred. Please check the console for more details.");
+					$("#response").removeClass("alert-success").addClass("alert-warning").fadeIn();
+					$("html, body").animate({ scrollTop: $('#response').offset().top }, 1000);
+					$btn.button("reset");
+				}
+			});
+		}
+	}
+	
+	
 	function actionAddProduct() {
 		var errorCounter = validateForm();
 	
@@ -642,31 +832,6 @@ $(document).ready(function() {
 
    	}
 
-   	function updateProduct() {
-
-   		var $btn = $("#action_update_product").button("loading");
-
-        jQuery.ajax({
-
-        	url: 'response.php',
-            type: 'POST', 
-            data: $("#update_product").serialize(),
-            dataType: 'json', 
-            success: function(data){
-				$("#response .message").html("<strong>" + data.status + "</strong>: " + data.message);
-				$("#response").removeClass("alert-warning").addClass("alert-success").fadeIn();
-				$("html, body").animate({ scrollTop: $('#response').offset().top }, 1000);
-				$btn.button("reset");
-			},
-			error: function(data){
-				$("#response .message").html("<strong>" + data.status + "</strong>: " + data.message);
-				$("#response").removeClass("alert-success").addClass("alert-warning").fadeIn();
-				$("html, body").animate({ scrollTop: $('#response').offset().top }, 1000);
-				$btn.button("reset");
-			} 
-    	});
-
-   	}
 
    	function updateUser() {
 
@@ -769,6 +934,7 @@ $(document).ready(function() {
 
    	}
 
+
    	// login function
 	function actionLogin() {
 
@@ -795,7 +961,7 @@ $(document).ready(function() {
 					$("html, body").animate({ scrollTop: $('#response').offset().top }, 1000);
 					$btn.button("reset");
 
-					window.location = "invoice-create.php";
+					window.location = "Home.php";
 				},
 				error: function(data){
 					$("#response .message").html("<strong>" + data.status + "</strong>: " + data.message);

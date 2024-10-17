@@ -54,7 +54,7 @@ $mysqli->close();
             <div class="panel-body form-group form-group-sm">
                 <form method="post" id="update_package">
                     <input type="hidden" name="action" value="update_package">
-                    <input type="hidden" name="id" value="<?php echo $getID; ?>">
+                    <input type="hidden" name="package_id" value="<?php echo $getID; ?>">
                     <div class="row">
                         <div class="col-xs-4">
                             <input type="text" class="form-control required" name="package_name" placeholder="Enter package name" value="<?php echo htmlspecialchars($package_name); ?>">

@@ -220,12 +220,12 @@ function getPackages() {
         echo '<tbody>';
         while ($row = $result->fetch_assoc()) {
             echo '<tr>';
-            echo '<td>' . $row['package_name'] . '</td>';
-            echo '<td>' . $row['package_desc'] . '</td>';
-            echo '<td>' . $row['package_price'] . '</td>';
+            echo '<td>' . htmlspecialchars($row['package_name']) . '</td>';
+            echo '<td>' . htmlspecialchars($row['package_desc']) . '</td>';
+            echo '<td>' . htmlspecialchars($row['package_price']) . '</td>';
             echo '<td>
                     <a href="package-edit.php?id=' . $row['package_id'] . '" class="btn btn-warning">Edit</a>
-                    <button class="btn btn-danger" data-toggle="modal" data-target="#confirm" data-id="' . $row['package_id'] . '">Delete</button>
+                    <button class="btn btn-danger delete-package-btn" data-id="' . $row['package_id'] . '" data-toggle="modal" data-target="#delete_package_modal">Delete</button>
                   </td>';
             echo '</tr>';
         }
@@ -238,7 +238,6 @@ function getPackages() {
     // Close the connection
     $mysqli->close();
 }
-
 // get products list
 function getProducts() {
 

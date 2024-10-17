@@ -1116,6 +1116,51 @@ if($action == 'add_package') {
     $stmt->close();
     $mysqli->close();
 }
+if ($action == 'update_package') {
+    $package_id = $_POST['package_id'];
+    $package_name = $_POST['package_name'];
+    $package_desc = $_POST['package_desc'];
+    $package_price = $_POST['package_price'];
+
+    // Query untuk memperbarui paket penyewaan GPS
+    $query = "UPDATE gps_packages
+              SET 
+                  package_name = ?,
+                  package_desc = ?,
+                  package_price = ?
+              WHERE
+                  package_id = ?;
+             ";
+
+    header('Content-Type: application/json');
+
+    /* Prepare statement */
+    $stmt = $mysqli->prepare($query);
+    if ($stmt === false) {
+        trigger_error('Wrong SQL: ' . $query . ' Error: ' . $mysqli->error, E_USER_ERROR);
+    }
+
+    /* Bind parameters. Types: s = string, i = integer, d = double, b = blob */
+    $stmt->bind_param('ssdi', $package_name, $package_desc, $package_price, $package_id);
+
+    if ($stmt->execute()) {
+        // Jika berhasil memperbarui
+        echo json_encode(array(
+            'status' => 'Success',
+            'message' => 'GPS rental package has been updated successfully!'
+        ));
+    } else {
+        // Jika gagal memperbarui
+        echo json_encode(array(
+            'status' => 'Error',
+            'message' => 'There has been an error, please try again.<pre>' . $mysqli->error . '</pre><pre>' . $query . '</pre>'
+        ));
+    }
+
+    // Menutup koneksi database
+    $stmt->close();
+    $mysqli->close();
+}
 
 
 
@@ -1300,6 +1345,52 @@ if($action == 'delete_user') {
 	$mysqli->close();
 
 }
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_POST['action'] === 'delete_package') {
+    // Get the package ID
+    $package_id = $_POST['package_id'];
+
+    // Connect to the database
+    $mysqli = new mysqli(DATABASE_HOST, DATABASE_USER, DATABASE_PASS, DATABASE_NAME);
+
+    // Check connection
+    if ($mysqli->connect_error) {
+        echo json_encode(array(
+            'status' => 'Error',
+            'message' => 'Database connection failed: ' . $mysqli->connect_error
+        ));
+        exit;
+    }
+
+    // Prepare and execute the delete query
+    $stmt = $mysqli->prepare("DELETE FROM gps_packages WHERE package_id = ?");
+    if ($stmt === false) {
+        echo json_encode(array(
+            'status' => 'Error',
+            'message' => 'Prepare failed: ' . $mysqli->error
+        ));
+        exit;
+    }
+
+    $stmt->bind_param('i', $package_id);
+    if ($stmt->execute()) {
+        echo json_encode(array(
+            'status' => 'Success',
+            'message' => 'GPS rental package has been deleted successfully!'
+        ));
+    } else {
+        echo json_encode(array(
+            'status' => 'Error',
+            'message' => 'Failed to delete package: ' . $stmt->error
+        ));
+    }
+
+    // Close the statement and connection
+    $stmt->close();
+    $mysqli->close();
+    exit;
+}
+?>
 
 // Delete User
 if($action == 'delete_customer') {
