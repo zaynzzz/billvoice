@@ -406,10 +406,10 @@ function getDueSoonInvoices() {
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 function dbConnect() {
-    $host = 'localhost';
-    $db = 'invoice';
-    $user = 'root';
-    $pass = 'root';
+    $host = DATABASE_HOST;
+    $db = DATABASE_NAME;
+    $user = DATABASE_USER;
+    $pass = DATABASE_PASS;
     
     try {
         $pdo = new PDO("mysql:host=$host;dbname=$db", $user, $pass);
