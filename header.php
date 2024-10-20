@@ -61,11 +61,11 @@ function formatRupiah(amount) {
      <a href="#" class="logo">
     <!-- Mini logo for sidebar (50x50 pixels) -->
     <span class="logo-mini">
-    <img src="/images/billvoice.png" class="user-image" alt="BillVoice Logo">
+    <img src="https://drive.google.com/file/d/1G_LptTUfeG9-_GK9Q34aemiIlUCGIxp2/view?usp=sharing" class="user-image" alt="BillVoice Logo">
     </span>
     <!-- Logo for regular state and mobile devices -->
     <span class="logo-lg">
-        <img src="/images/billvoice.png" class="user-image" alt="BillVoice Logo">
+        <img src="https://drive.google.com/file/d/1G_LptTUfeG9-_GK9Q34aemiIlUCGIxp2/view?usp=sharing" class="user-image" alt="BillVoice Logo">
         <b>Bill</b>Voice
     </span>
 </a>
@@ -126,6 +126,14 @@ function formatRupiah(amount) {
             <li><a href="#" class="download-csv"><i class="fa fa-download"></i>Download CSV</a></li>
           </ul>
         </li> -->
+        <!-- Menu 1 -->
+        <li class="treeview">
+          <a href="rent.php"><i class="fa fa-shopping-basket"></i><span>Rent</span>
+            <span class="pull-right-container">
+              <i class="fa fa-angle-left pull-right"></i>
+            </span>
+          </a>
+        </li>
         <!-- Menu 2 -->
         <li class="treeview">
           <a href="#"><i class="fa fa-shopping-basket"></i><span>Items</span>
