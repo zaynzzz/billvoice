@@ -20,7 +20,7 @@ define('DATABASE_PASS', 'sEf[/#i/r1@');
 // DATABASE Local 
 // define('DATABASE_NAME', 'invoice');
 // define('DATABASE_USER', 'root');
-// define('DATABASE_PASS', 'root');
+/// define('DATABASE_PASS', 'root');
 
 // COMPANY INFORMATION (Sesuaikan dengan informasi perusahaan di Indonesia)
 define('COMPANY_LOGO', 'images/logo.png');
